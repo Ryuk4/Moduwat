@@ -32,62 +32,19 @@ app= Flask(__name__)
 
 
 def poll_data(i2cCall,piCall,sqlCursor):
-        now = time.time()
-        next=now+5
-        first = time.time()
+        next=time.time()
         while True:
-                time.sleep(0.5)
-                #print time.time()-now
-                #if time.time()>next:
-                #       next=time.time()+5
-                #       print next
-
-
-                #time.sleep(0.5)
-                #if time.time()>next:
-                #if piCall.read(23) == 1:
-                        #print i2cCall.dataList
                 if time.time()>next:
-                        #print "pass1"
-                        next=time.time()+360
-                        #if piCall.read(23) ==1:
-                                #print "pass"
-                                #print next-time.time()
-                                #next=time.time()+5
-                                #print next-time.time()
-			piCall.write(18,1)
-			time.sleep(5)
+                        next=time.time()+10
                         read = i2cCall.read_sensor(i2cCall.devices[0])
-
-
-                        #try:
-                        #        read=int(i2cCall.dataList[1][-1])
-                                        #read=read/100.0
-                        #except:
-                        #        read=None
- #                       print "read"+str(read)
                         now = time.time()
-                        now2=time.time()-first
-                        #now2=int(now2*1000)
+
                         sql = "INSERT INTO hygrometry1 (time,measure) VALUES (%s,%s)"
                         if read is not None:
                                 values.append((now,read))
-                                now3=int(now)
-                                read2=int(read)
-                                #print type(now3), type(read2)
-                                val = (now3,read2)
-                                #print val
+                                val = (now,read)
                                 sqlCursor.execute(sql,val)
                                 mydb.commit()
-                        #print values
-#                        print next-now
-                        time.sleep(1)
-			piCall.write(18,0)
-                #elif piCall.read(23) == 0:
-                        #print 1
-                        #i2cCall.scan()
-                        #time.sleep(10)
-
 
 
 @app.route("/data.json")
@@ -101,16 +58,15 @@ def data():
         cursor=mydb.cursor()
         cursor.execute("SELECT 1000*time, measure from hygrometry1")
         results = cursor.fetchall()
-        #print results
         return json.dumps(results)
 
 @app.route("/graph")
 def graph():
         return render_template("graph.html")
 
-#@app.route("/settings")
-#def index():
-#	return render_template("settings.html")
+@app.route("/settings")
+def index():
+	return render_template("settings.html")
 
 @app.route("/settings", methods = ['POST'])
 def settings():
@@ -120,8 +76,6 @@ def settings():
 		if 'submit' in request.form:
 			f_adress = int(request.form["faddress"])
 			n_adress = int(request.form["naddress"])
-#			i2cInstance.write(f_adress,0xC1)
-#			i2cInstance.write(f_adress,n_adress)
 			i2cInstance.change_adress(f_adress,n_adress)
 			message = "Changed adress "+ str(f_adress) +" to "+str(n_adress)
 		if 'scan' in request.form:
@@ -152,7 +106,7 @@ if __name__ == '__main__':
 			database = 'measurements'
                 )
                 mycursor = mydb.cursor()
-
+		i2cInstance.scan()
                 thr = Thread(target = poll_data, args=(i2cInstance,pi,mycursor))
                 thr.daemon = True
                 thr.start()
