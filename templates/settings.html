@@ -1,0 +1,23 @@
+<html>
+   <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+   <body>
+      {% if message %}
+         <p>{{ message }}</p>
+      {% endif %}
+      <form action = "" method = "post">
+         <p>Enter adress to change</p>
+         <p><input type = "text" name = "faddress" /></p>
+	 <p>Enter new address</p>
+	 <p><input type = "text" name = "naddress" /></p>
+         <p><input type = "submit" name = "submit" value = "submit" /></p>
+      </form>
+      <form action = "" method = "post">
+         <p><input type = "submit" name = "scan" value = "scan" /></p>
+      </form>
+
+      {% for each in foobar %}
+        {{ each }}
+      {% endfor %}
+   </body>
+</html>

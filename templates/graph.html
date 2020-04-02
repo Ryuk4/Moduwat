@@ -1,0 +1,80 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>Highstock Example</title>
+		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+        <script src="{{ url_for('static', filename='jquery-1.8.3.min.js') }}"></script>
+	<script src="https://code.highcharts.com/stock/highstock.js"></script>
+	<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+	<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+	<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+
+
+
+	<script type="text/javascript">
+	Highcharts.getJSON('http://192.168.1.84:9090/data.json', function (data) {
+        	// Create the chart
+        	Highcharts.stockChart('container',{
+        		rangeSelector : {
+                		selected : 1
+            		},
+            		title : {
+                		text : 'My Sensor'
+            		},
+            		series : [{
+                		name : 'Value',
+                		data : data,
+                		tooltip: {
+                 			valueDecimals: 2
+                		}
+            		}]
+        	});
+    	});
+
+		</script>
+	</head>
+	<body>
+<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+<!--	 
+		<button class="command command-water" value="water"> 
+			Water 
+		</button> -->
+	</body>
+</html>
+
+<script> 
+// Only run what comes next *after* the page has loaded 
+addEventListener("DOMContentLoaded", function() { 
+// Grab all of the elements with a class of command 
+// (which all of the buttons we just created have) 
+	var commandButtons = document.querySelectorAll(".command"); 
+	for (var i=0, l=commandButtons.length; i<l; i++) { 
+		var button = commandButtons[i];
+		// For each button, listen for the "click" event 
+		button.addEventListener("click", function(e) { 
+			// When a click happens, stop the button 
+			// from submitting our form (if we have one) 
+			e.preventDefault(); 
+			var clickedButton = e.target; 
+			var command = clickedButton.value; 
+			// Now we need to send the data to our server 
+			// without reloading the page - this is the domain of 
+			// AJAX (Asynchronous JavaScript And XML)
+			// We will create a new request object 
+			// and set up a handler for the response 
+			var request = new XMLHttpRequest(); 
+			request.onload = function() { 
+				// We could do more interesting things with the response 
+				// or, we could ignore it entirely 
+				alert(request.responseText); 
+			}; 
+			// We point the request at the appropriate command 
+			request.open("GET", "/" + command, true); 
+			// and then we send it off 
+			request.send();
+		}); 
+	} 
+}, true); 
+</script>
+
