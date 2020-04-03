@@ -35,20 +35,20 @@ def poll_data(i2cCall,piCall,sqlCursor):
         next=time.time()
         while True:
                 if time.time()>next:
-                        next=time.time()+10
-                        read = i2cCall.read_sensor(i2cCall.devices[0])
-                        now = time.time()
+                        next=time.time()+360
+			for device in i2cCall.devices: #we cover all the detected attinys
+                        	read = i2cCall.read_sensor(device) #we read the sensor
+                        	now = time.time() #we read the time when the measurement was done
+                        	sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (%s,%s)"
+                        	if read is not None:
+					val = (now,read)
+                                	values.append(val)
+                                	sqlCursor.execute(sql,val)
+                                	mydb.commit()
 
-                        sql = "INSERT INTO hygrometry1 (time,measure) VALUES (%s,%s)"
-                        if read is not None:
-                                values.append((now,read))
-                                val = (now,read)
-                                sqlCursor.execute(sql,val)
-                                mydb.commit()
 
-
-@app.route("/data.json")
-def data():
+@app.route("/<int:device>/data.json")
+def data(device):
         mydb = pymysql.connect(
                 host = "localhost",
                 user = str(sys.argv[1]),
@@ -56,7 +56,7 @@ def data():
                 db = "measurements"
         )
         cursor=mydb.cursor()
-        cursor.execute("SELECT 1000*time, measure from hygrometry1")
+	cursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
         results = cursor.fetchall()
         return json.dumps(results)
 
@@ -64,11 +64,11 @@ def data():
 def graph():
         return render_template("graph.html")
 
-@app.route("/settings")
-def index():
-	return render_template("settings.html")
+#@app.route("/settings")
+#def index():
+#	return render_template("settings.html")
 
-@app.route("/settings", methods = ['POST'])
+@app.route("/settings", methods = ['POST','GET'])
 def settings():
 	message=''
 	bar=[]
@@ -81,8 +81,9 @@ def settings():
 		if 'scan' in request.form:
                     	i2cInstance.scan()
 			bar=i2cInstance.devices
-
-	return render_template("settings.html", message=message, foobar=bar)
+		return render_template("settings.html", message=message, foobar=bar)
+	else :
+		return render_template("settings.html")
 
 @app.route("/<cmd>")
 def command(cmd=None):
@@ -107,6 +108,11 @@ if __name__ == '__main__':
                 )
                 mycursor = mydb.cursor()
 		i2cInstance.scan()
+		for device in i2cInstance.devices:
+			sql1 = "DROP TABLE IF EXISTS hygrometry"+str(device)
+			mycursor.execute(sql1)
+			sql = "CREATE TABLE hygrometry"+str(device)+" (time INT, measure INT)"
+			mycursor.execute(sql)
                 thr = Thread(target = poll_data, args=(i2cInstance,pi,mycursor))
                 thr.daemon = True
                 thr.start()
