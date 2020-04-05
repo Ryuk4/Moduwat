@@ -62,7 +62,7 @@ def data(device):
 
 @app.route("/graph")
 def graph():
-        return render_template("graph.html")
+        return render_template("graph.html", devices = i2cInstance.devices)
 
 #@app.route("/settings")
 #def index():
