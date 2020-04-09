@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from flask import Flask, render_template, Response, jsonify, request
 from jinja2 import Template
 import json
@@ -14,18 +15,29 @@ import sys
 
 values = deque(maxlen=1000)
 
+watering = False
 
-WATER = "water"
+#WATER4_ON = "water4_on"
+#WATER4_OFF = "water4_off"
 
-AVAILABLE_COMMANDS = {
-	'Water' : WATER
-}
+#AVAILABLE_COMMANDS = {
+#	'Water4_ON' : WATER4_ON
+#	'Water4_OFF' : WATER4_OFF
+#}
 
 pi=pigpio.pi()
 pi.set_mode(23,pigpio.INPUT)
 pi.set_pull_up_down(23,pigpio.PUD_UP)
 i2cInstance = I2c(pi)
 
+mydb = pymysql.connect(
+	host = 'localhost',
+        user = str(sys.argv[1]),
+        passwd = str(sys.argv[2]),
+        database = 'measurements'
+)
+mycursor = mydb.cursor()
+cursor = mydb.cursor()
 
 
 app= Flask(__name__)
@@ -34,30 +46,29 @@ app= Flask(__name__)
 def poll_data(i2cCall,piCall,sqlCursor):
         next=time.time()
         while True:
-                if time.time()>next:
-                        next=time.time()+360
+		now=time.time()
+                if now>next:
+			if watering :
+				next=time.time()+1
+			else :
+				next=time.time()+359.9
 			for device in i2cCall.devices: #we cover all the detected attinys
                         	read = i2cCall.read_sensor(device) #we read the sensor
-                        	now = time.time() #we read the time when the measurement was done
+                        	nowread = time.time() #we read the time when the measurement was done
                         	sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (%s,%s)"
                         	if read is not None:
-					val = (now,read)
+					val = (nowread,read)
                                 	values.append(val)
                                 	sqlCursor.execute(sql,val)
                                 	mydb.commit()
+				time.sleep(0.1)
 
 
 @app.route("/<int:device>/data.json")
 def data(device):
-        mydb = pymysql.connect(
-                host = "localhost",
-                user = str(sys.argv[1]),
-                passwd = str(sys.argv[2]),
-                db = "measurements"
-        )
-        cursor=mydb.cursor()
 	cursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
         results = cursor.fetchall()
+	#mydb.close()
         return json.dumps(results)
 
 @app.route("/graph")
@@ -85,28 +96,27 @@ def settings():
 	else :
 		return render_template("settings.html")
 
-@app.route("/<cmd>")
+@app.route("/<cmd>", methods = ['GET'])
 def command(cmd=None):
 	command=cmd.upper()
-	if command == 'WATER':
-		pass
+	#return command[0:5]
+	if command[0:5] == 'WATER':
+		if command[6:9] == '_ON':
+			i2cInstance.On(int(command[5]))
+			return 'Watering '+command[5]
+		elif command[6:10] == '_OFF':
+			i2cInstance.Off(int(command[5]))
+			return 'Stop watering '+command[5]
+		else:
+			return 'Wrong command'
+	else:
+		return 'Command not implemented yet' 
 		#i2cInstance.write(0x4,0xC2)
 		#i2cInstance.write(0x4,255)
 
 
 if __name__ == '__main__':
         try:
-#                pi=pigpio.pi()
-#                pi.set_mode(23,pigpio.INPUT)
-#                pi.set_pull_up_down(23,pigpio.PUD_UP)
-#                i2cInstance = I2c(pi)
-                mydb = pymysql.connect(
-                        host = 'localhost',
-                        user = str(sys.argv[1]),
-                        passwd = str(sys.argv[2]),
-			database = 'measurements'
-                )
-                mycursor = mydb.cursor()
 		i2cInstance.scan()
 		for device in i2cInstance.devices:
 			sql1 = "DROP TABLE IF EXISTS hygrometry"+str(device)
@@ -117,7 +127,7 @@ if __name__ == '__main__':
                 thr.daemon = True
                 thr.start()
 
-                app.run(host='0.0.0.0', debug=True ,port=9090)
+                app.run(host='0.0.0.0', debug=False ,port=9090)
 
         except(KeyboardInterrupt):
                 mydb.close()

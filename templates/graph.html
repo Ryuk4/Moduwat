@@ -4,6 +4,8 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<title>Humidity graph</title>
 		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/toggle.css') }}">
+
 	</head>
 	<body>
 		<div id="maincontainer"></div>
@@ -12,9 +14,9 @@
 		</div>
 	 	-->
 		<div id="controls">
-			<button class="command command-water" value="water"> 
+		<!--	<button class="command command-water" value="water"> 
 				Water 
-			</button>
+			</button>-->
 		</div>
 		<div id="links">
 			<a href="settings">Settings</a>
@@ -33,15 +35,35 @@
 	var maincontainer = $('#maincontainer');
 	var devices = {{ devices }} ;
 	var containers = [];
+	button_row = [];
 	for (let i = 0; i < devices.length; i++) {
-	        //containers[i] = '<div id="container';
-	        //containers[i] = containers[i].concat(String(devices[i]),'" style="min-widt$
-	        //maincontainer.append(containers[i]);
-	        //alert(containers);
-	        containers[i] = document.createElement('div');
+	        containers[i] = document.createElement("div");
 	        document.getElementById("maincontainer").appendChild(containers[i]);
-	        //alert(containers[i]);
-	        Highcharts.getJSON('http://192.168.1.84:9090/4/data.json', function (data) {
+		group = document.createElement("table");
+		button_row[i] = document.createElement("tr");
+		//button_row[i].className = "row";
+		column_1 = document.createElement("th");
+		//column_1.className = "column";
+		column_1.innerHTML = "Watering ".concat(devices[i]);
+		column_2 = document.createElement("th");
+                //column_2.className = "column";
+		var label = document.createElement("label");
+		label.className = "switch";
+		btn = document.createElement("input");
+		btn.type = "checkbox"
+		btn.className = "command command-water";
+		btn.value = "water".concat(devices[i]);
+		btn.id = "button_".concat(devices[i]);		
+		span = document.createElement("span");
+		span.className = "slider round";
+		label.appendChild(btn);
+		label.appendChild(span);
+		column_2.appendChild(label);
+		button_row[i].appendChild(column_1);
+		button_row[i].appendChild(column_2);
+		group.appendChild(button_row[i]);
+		document.getElementById("controls").appendChild(group);
+	        Highcharts.getJSON('http://192.168.1.84:9090/'.concat(devices[i],'/data.json'), function (data) {
 	                // Create the chart
 	                Highcharts.stockChart(containers[i],{
 	                        rangeSelector : {
@@ -68,16 +90,18 @@
 addEventListener("DOMContentLoaded", function() { 
 // Grab all of the elements with a class of command 
 // (which all of the buttons we just created have) 
-	var commandButtons = document.querySelectorAll(".command"); 
+	var commandButtons = document.querySelectorAll(".command");
+	//alert(commandButtons.length); 
 	for (var i=0, l=commandButtons.length; i<l; i++) { 
 		var button = commandButtons[i];
+		//alert(commandButtons[i]);
 		// For each button, listen for the "click" event 
-		button.addEventListener("click", function(e) { 
+		button.addEventListener("change", function(e) { 
 			// When a click happens, stop the button 
 			// from submitting our form (if we have one) 
 			e.preventDefault(); 
-			var clickedButton = e.target; 
-			var command = clickedButton.value; 
+			var changedButton = e.target; 
+			var command = changedButton.value; 
 			// Now we need to send the data to our server 
 			// without reloading the page - this is the domain of 
 			// AJAX (Asynchronous JavaScript And XML)
@@ -89,10 +113,18 @@ addEventListener("DOMContentLoaded", function() {
 				// or, we could ignore it entirely 
 				alert(request.responseText); 
 			}; 
+			if(this.checked){
+				request.open("GET","/"+command+"_ON", true);
+				//alert("/"+command+"_ON");
+			}
+			else{
+				request.open("GET","/"+command+"_OFF", true);
+			}
 			// We point the request at the appropriate command 
-			request.open("GET", "/" + command, true); 
+			//request.open("GET", "/" + command, true); 
 			// and then we send it off 
 			request.send();
+			
 		}); 
 	} 
 }, true); 
