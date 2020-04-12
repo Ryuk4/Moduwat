@@ -18,7 +18,7 @@ class I2c(object):
 			print(str(device)+' '+str(time.time()))
 			h=self.pi.i2c_open(1,device)
 			try:
-				self.pi.i2c_write_byte(h,0x01)
+				self.pi.i2c_write_byte(h,0x00)
 				time.sleep(0.5)
 			except:
 				if device in self.devices:
@@ -49,7 +49,7 @@ class I2c(object):
 		self.pi.i2c_write_byte(h, new_adr)
 		time.sleep(0.5)
 		self.pi.i2c_close(h)
-		if new_addr != 3:
+		if new_adr != 3:
 			del self.available_adresses[self.available_adresses.index(new_adr)]
 		if old_adr != 3:
 			del self.devices[self.devices.index(old_adr)]
@@ -81,10 +81,13 @@ class I2c(object):
 
 	def read_sensor(self, device):
 		h=self.pi.i2c_open(1,device)
-		val = int(self.pi.i2c_read_byte(h))
-		val = 100-val*100/255
-		self.pi.i2c_close(h)
-		return val
+		try:
+			val = int(self.pi.i2c_read_byte(h))
+			val = 100-val*100/255
+			self.pi.i2c_close(h)
+			return val
+		except e:
+			print e
 
 	def to_unix_timestamp(self,ts):
 		"""

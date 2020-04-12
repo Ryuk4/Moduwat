@@ -6,7 +6,7 @@ import json
 import pigpio
 from i2c import I2c
 import time
-from threading import Thread
+from threading import Thread, Lock
 import codecs
 from collections import deque
 import pymysql
@@ -14,9 +14,9 @@ import pymysql.cursors
 import sys
 
 values = deque(maxlen=1000)
-
+#lock = Lock()
 watering = False
-
+next = 0
 #WATER4_ON = "water4_on"
 #WATER4_OFF = "water4_off"
 
@@ -38,29 +38,36 @@ mydb = pymysql.connect(
 )
 mycursor = mydb.cursor()
 cursor = mydb.cursor()
-
+#next = 0
 
 app= Flask(__name__)
 
 
 def poll_data(i2cCall,piCall,sqlCursor):
         next=time.time()
+	#global watering
+	#global next
         while True:
+		#print watering
 		now=time.time()
                 if now>next:
-			if watering :
-				next=time.time()+1
-			else :
-				next=time.time()+359.9
+			#if watering:
+			#	lock.acquire()
+			#	next = time.time() +9.5
+			#	lock.release()
+			#else:
+			#	lock.acquire()
+			next = time.time()+9.9
+			#	lock.release()
 			for device in i2cCall.devices: #we cover all the detected attinys
-                        	read = i2cCall.read_sensor(device) #we read the sensor
-                        	nowread = time.time() #we read the time when the measurement was done
-                        	sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (%s,%s)"
-                        	if read is not None:
+	                       	read = i2cCall.read_sensor(device) #we read the sensor
+        	               	nowread = time.time() #we read the time when the measurement was done
+                	       	sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (%s,%s)"
+                       		if read is not None:
 					val = (nowread,read)
-                                	values.append(val)
-                                	sqlCursor.execute(sql,val)
-                                	mydb.commit()
+                        	       	values.append(val)
+                        	       	sqlCursor.execute(sql,val)
+                        	       	mydb.commit()
 				time.sleep(0.1)
 
 
@@ -100,12 +107,22 @@ def settings():
 def command(cmd=None):
 	command=cmd.upper()
 	#return command[0:5]
+	global watering
+	global next
 	if command[0:5] == 'WATER':
 		if command[6:9] == '_ON':
 			i2cInstance.On(int(command[5]))
+			#lock.acquire()
+			#watering = True
+			#next = time.time() + 1
+			#lock.release()
 			return 'Watering '+command[5]
 		elif command[6:10] == '_OFF':
 			i2cInstance.Off(int(command[5]))
+			#lock.acquire()
+			#watering = False
+			#next = time.time() + 359
+			#lock.release()
 			return 'Stop watering '+command[5]
 		else:
 			return 'Wrong command'
@@ -127,7 +144,7 @@ if __name__ == '__main__':
                 thr.daemon = True
                 thr.start()
 
-                app.run(host='0.0.0.0', debug=False ,port=9090)
+                app.run(host='0.0.0.0', debug=False ,port=9090, threaded=True)
 
         except(KeyboardInterrupt):
                 mydb.close()
