@@ -29,11 +29,12 @@
 <script src="https://code.highcharts.com/stock/modules/data.js"></script>
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
-
+<script src="https://code.highcharts.com/modules/boost.js"></script>
 
 <script type="text/javascript">
 	var maincontainer = $('#maincontainer');
 	var devices = {{ devices }} ;
+	var watering = {{ watering }} ;
 	var containers = [];
 	button_row = [];
 	for (let i = 0; i < devices.length; i++) {
@@ -53,7 +54,12 @@
 		btn.type = "checkbox"
 		btn.className = "command command-water";
 		btn.value = "water".concat(devices[i]);
-		btn.id = "button_".concat(devices[i]);		
+		btn.id = "button_".concat(devices[i]);
+		if(watering.length == 1 ){
+			if(devices[i] == watering[0]){
+				btn.checked = true;
+			}
+		}		
 		span = document.createElement("span");
 		span.className = "slider round";
 		label.appendChild(btn);
@@ -65,20 +71,32 @@
 		document.getElementById("controls").appendChild(group);
 	        Highcharts.getJSON('http://192.168.1.84:9090/'.concat(devices[i],'/data.json'), function (data) {
 	                // Create the chart
-	                Highcharts.stockChart(containers[i],{
+			Highcharts.chart(containers[i],{
+	                //Highcharts.stockChart(containers[i],{
+				chart : {
+					zoomType: 'x'
+				},
 	                        rangeSelector : {
 	                                selected : 1
 	                        },
 	                        title : {
 	                                text : 'Sensor'.concat(String(devices[i]))
 	                        },
+				xAxis : {
+					type : 'datetime',
+					},
 	                        series : [{
 	                                name : 'Value',
 	                                data : data,
 	                                tooltip: {
 	                                        valueDecimals: 2
 	                                }
-	                        }]
+	                        }],
+				data : {
+					rowsURL : 'http://192.168.1.84:9090/'.concat(devices[i],'/data.json'),
+					enablePolling:  true,
+            				dataRefreshRate: 2
+				}
 	                });
 		});
 	}
@@ -116,6 +134,10 @@ addEventListener("DOMContentLoaded", function() {
 			if(this.checked){
 				request.open("GET","/"+command+"_ON", true);
 				//alert("/"+command+"_ON");
+				for (var i=0, l=commandButtons.length; i<l; i++) {
+					commandButtons[i].checked = false;
+					this.checked = true;
+				}
 			}
 			else{
 				request.open("GET","/"+command+"_OFF", true);

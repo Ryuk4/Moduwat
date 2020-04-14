@@ -11,11 +11,12 @@ class I2c(object):
 		self.available_adresses = range(4,70)
 		self.handles = []
 		self.devices = []
+		self.watering = []
 		self.dataList = []
 		self.pi=pi
 	def scan(self):
 		for device in range(3,70):
-			print(str(device)+' '+str(time.time()))
+			#print(str(device)+' '+str(time.time()))
 			h=self.pi.i2c_open(1,device)
 			try:
 				self.pi.i2c_write_byte(h,0x00)
@@ -40,7 +41,7 @@ class I2c(object):
 				self.devices.sort()
 				del self.available_adresses[self.available_adresses.index(device)]
 				self.pi.i2c_close(h)
-		print self.available_adresses
+		#print self.available_adresses
 
 	def change_adress(self, old_adr, new_adr):
 		h=self.pi.i2c_open(1,old_adr)
@@ -55,6 +56,9 @@ class I2c(object):
 			del self.devices[self.devices.index(old_adr)]
 			self.available_adresses.append(old_adr)
 			self.available_adresses.sort()
+		if old_adr in self.watering:
+			del self.watering[self.watering.index(old_adr)]
+			self.watering.append(new_adr)
 		self.devices.append(new_adr)
 		self.devices.sort()
 
@@ -69,15 +73,24 @@ class I2c(object):
 			pass
 
 	def On(self, device) :
-		h=self.pi.i2c_open(1,device)
-		self.pi.i2c_write_byte(h,0x02)
-		self.pi.i2c_close(h)
+		try:
+			h=self.pi.i2c_open(1,device)
+			self.pi.i2c_write_byte(h,0x02)
+			self.pi.i2c_close(h)
+		except:
+			self.On(device)
+		if device not in self.watering:
+			self.watering.append(device)
 
         def Off(self, device) :
-                h=self.pi.i2c_open(1,device)
-                self.pi.i2c_write_byte(h,0x01)
-                self.pi.i2c_close(h)
-
+		try:
+  	              	h=self.pi.i2c_open(1,device)
+        	      	self.pi.i2c_write_byte(h,0x01)
+			self.pi.i2c_close(h)
+		except:
+			self.Off(device)
+		if device in self.watering:
+			del self.watering[self.watering.index(device)]
 
 	def read_sensor(self, device):
 		h=self.pi.i2c_open(1,device)
@@ -86,7 +99,7 @@ class I2c(object):
 			val = 100-val*100/255
 			self.pi.i2c_close(h)
 			return val
-		except e:
+		except Exception as e:
 			print e
 
 	def to_unix_timestamp(self,ts):
