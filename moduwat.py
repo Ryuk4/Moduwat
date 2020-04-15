@@ -94,7 +94,7 @@ def poll_data(i2cCall,piCall,inputCursor):
 			#	next = time.time() +9.5
 			#	lock.release()
 			else:
-				controlCursor.execute(sql,["next",time.time()+359])
+				controlCursor.execute(sql,["next",time.time()+599])
 				mydbControl.commit()
 			#	lock.acquire()
 			#next = time.time()+9
@@ -138,6 +138,9 @@ def data(device):
 	mydb.close()
 	#print(results)
 	#mydb.close()
+#	results = list(results)
+#	results.insert(0,('time','value'))
+#	print(results)
         return json.dumps(results)
 
 @app.route("/graph")
@@ -203,7 +206,7 @@ def command(cmd=None):
 				del i2cInstance.watering[0]
 			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
 			controlCursor.execute(sql,["watering",0])
-			controlCursor.execute(sql,["next",time.time()+359])
+			controlCursor.execute(sql,["next",time.time()+599])
 			mydbControl.commit()
                         mydbControl.close()
 			#lock.acquire()
