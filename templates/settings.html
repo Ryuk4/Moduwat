@@ -1,6 +1,7 @@
 <html>
    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/toggle.css') }}">
+   <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
    <body>
       {% if message %}
          <p>{{ message }}</p>
@@ -15,11 +16,106 @@
       <form action = "" method = "post">
          <p><input type = "submit" name = "scan" value = "scan" /></p>
       </form>
+      
+      <form action = "" id = "devices" method = "post">
 
-      {% for each in foobar %}
-        {{ each }}
-      {% endfor %}
+      </form> 
+      <form action ="" method = "post">
+	<p><input type = "submit" name = {{ mode }} value = {{ mode }} /></p>
+      </form>
 	
 	<a href="graph">Humidity plots</a>
    </body>
 </html>
+
+<script>
+	var devices = {{ devices }} ;
+	var threshold = {{ threshold }} ;
+	var entry_row = [];
+	group = document.createElement("table");
+	row_1 = document.createElement("tr");
+	column_1 = document.createElement("th");
+	column_1.innerHTML = "Devices";
+	column_2 = document.createElement("th");
+	column_2.innerHTML = "Current threshold";
+	column_3 = document.createElement("th");
+        column_3.innerHTML = "New threshold";
+        row_1.appendChild(column_1);
+        row_1.appendChild(column_2);
+        row_1.appendChild(column_3);
+        group.appendChild(row_1);
+
+        for (let i = 0; i < devices.length; i++) {
+		entry_row[i] = document.createElement("tr");
+		column_11 = document.createElement("td");
+		column_11.innerHTML = "Device ".concat(devices[i]);
+		column_21 = document.createElement("td");
+                column_21.innerHTML = threshold[i];
+		column_31 = document.createElement("td");
+		input31 = document.createElement("input");
+		input31.type = "text"
+		input31.name = "threshold".concat(devices[i]) 
+		//input31.value = "threshold".concat(devices[i])
+		column_31.appendChild(input31);
+		entry_row[i].appendChild(column_11); 
+		entry_row[i].appendChild(column_21);
+		entry_row[i].appendChild(column_31);
+		group.appendChild(entry_row[i]);
+	}
+	document.getElementById("devices").appendChild(group);
+	button = document.createElement("input");
+	button.type = "submit" ;
+	button.value = "change threshold" ;
+	button.name =  "change" ;
+	document.getElementById("devices").appendChild(button);
+</script>
+
+<script>
+// Only run what comes next *after* the page has loaded
+addEventListener("DOMContentLoaded", function() {
+// Grab all of the elements with a class of command
+// (which all of the buttons we just created have)
+        var commandButtons = document.querySelectorAll(".command");
+        //alert(commandButtons.length);
+        for (var i=0, l=commandButtons.length; i<l; i++) {
+                var button = commandButtons[i];
+                //alert(commandButtons[i]);
+                // For each button, listen for the "click" event
+                button.addEventListener("change", function(e) {
+                        // When a click happens, stop the button
+                        // from submitting our form (if we have one)
+                        e.preventDefault();
+                        var changedButton = e.target;
+                        var command = changedButton.value;
+                        // Now we need to send the data to our server
+                        // without reloading the page - this is the domain of
+                        // AJAX (Asynchronous JavaScript And XML)
+                        // We will create a new request object
+                        // and set up a handler for the response
+                        var request = new XMLHttpRequest();
+                        request.onload = function() {
+                                // We could do more interesting things with the response
+                                // or, we could ignore it entirely
+                                alert(request.responseText);
+                        };
+                        if(this.checked){
+                                request.open("GET","/"+command, true);
+                                //alert("/"+command);
+                                for (var i=0, l=commandButtons.length; i<l; i++) {
+                                        commandButtons[i].checked = false;
+                                        this.checked = true;
+                                }
+                        }
+                        else{
+                                request.open("GET","/"+command+"_OFF", true);
+                        }
+                        // We point the request at the appropriate command
+                        //request.open("GET", "/" + command, true);
+                        // and then we send it off
+                        request.send();
+
+                });
+        }
+}, true);
+</script>
+

@@ -5,6 +5,7 @@ from jinja2 import Template
 import json
 import pigpio
 from i2c import I2c
+from motor import Motor
 import time
 from threading import Thread, Lock
 import codecs
@@ -15,91 +16,73 @@ import sys
 import sqlite3
 
 values = deque(maxlen=1000)
-#lock = Lock()
-#watering = False
-#next = 0
-#WATER4_ON = "water4_on"
-#WATER4_OFF = "water4_off"
-
-#AVAILABLE_COMMANDS = {
-#	'Water4_ON' : WATER4_ON
-#	'Water4_OFF' : WATER4_OFF
-#}
 
 pi=pigpio.pi()
-pi.set_mode(23,pigpio.INPUT)
-pi.set_pull_up_down(23,pigpio.PUD_UP)
+#pi.set_mode(23,pigpio.INPUT)
+#pi.set_pull_up_down(23,pigpio.PUD_UP)
 i2cInstance = I2c(pi)
-
-
-#mydb = sqlite3.connect('measurements.db')
-#mydb = pymysql.connect(
-#	host = 'localhost',
-#        user = str(sys.argv[1]),
-#        passwd = str(sys.argv[2]),
-#        database = 'measurements'
-#)
-
-
-#mydbControl = pymysql.connect(
-#        host = 'localhost',
-#        user = str(sys.argv[1]),
-#        passwd = str(sys.argv[2]),
-#        database = 'controls'
-#)
-
-#measureCursor = mydb.cursor()
-#showCursor = mydb.cursor()
-#controlCursor = mydbControl.cursor()
-#next = 0
+motor = Motor(pi)
 
 
 app= Flask(__name__)
 
 
-def poll_data(i2cCall,piCall,inputCursor):
+def poll_data(i2cCall,piCall):
         next=time.time()
-	#global watering
-	#global next
+	changed = False
+	update = True
+	delay = time.time()
         while True:
-		#print watering
 		now=time.time()
 		mydbControl = pymysql.connect(
-		        host = 'localhost',
-        		user = str(sys.argv[1]),
-        		passwd = str(sys.argv[2]),
-        		database = 'controls'
+	                host = 'localhost',
+        	        user = str(sys.argv[1]),
+                        passwd = str(sys.argv[2]),
+                        database = 'controls'
 		)
-		controlCursor = mydbControl.cursor()
-		controlCursor.execute("SELECT variable,data from controls where variable = 'next'")
-		next = controlCursor.fetchall()[0][1]
-		mydbControl.close()
-		#print(next)
-                if now>next:
-			mydbControl = pymysql.connect(
-	                        host = 'localhost',
-        	                user = str(sys.argv[1]),
-                	        passwd = str(sys.argv[2]),
-                	        database = 'controls'
-                	)
-                	controlCursor = mydbControl.cursor()
-			controlCursor.execute("SELECT variable,data from controls where variable = 'watering'")
-			watering = controlCursor.fetchall()[0][1]
-			print(watering)
-			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
-			if watering==1:
+                controlCursor = mydbControl.cursor()
+		controlCursor.execute("SELECT variable,data from controls where variable = 'watering'")
+		watering = controlCursor.fetchall()[0][1]
+		sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+		if watering==1:
+			if not changed:
+				update = True
+			if update :
 				controlCursor.execute(sql,["next",time.time()+2])
 				mydbControl.commit()
-			#	lock.acquire()
-			#	next = time.time() +9.5
-			#	lock.release()
-			else:
-				controlCursor.execute(sql,["next",time.time()+599])
-				mydbControl.commit()
-			#	lock.acquire()
-			#next = time.time()+9
-			#	lock.release()
-			mydbControl.close()
+				changed = True
+				update = False
+		elif watering == 0:
+			if changed:
+				delay = time.time()+60
+				changed = False
+				update = True
+			if now > delay :
+				if update:
+					controlCursor.execute(sql,["next",time.time()+599])
+					mydbControl.commit()
+					update = False
+			elif now < delay :
+				if update:
+					#print(delay-now)
+					controlCursor.execute(sql,["next",time.time()+2])
+        	                        mydbControl.commit()
+					update = False
+		mydbControl.close()
+
+		mydbControl = pymysql.connect(
+                        host = 'localhost',
+                        user = str(sys.argv[1]),
+                        passwd = str(sys.argv[2]),
+                        database = 'controls'
+                )
+                controlCursor = mydbControl.cursor()
+                controlCursor.execute("SELECT variable,data from controls where variable = 'next'")
+                next = controlCursor.fetchall()[0][1]
+                mydbControl.close()
+
+		if now > next :
+			update = True
 			for device in i2cCall.devices: #we cover all the detected attinys
 				#temps1=time.time()
 	                       	read = i2cCall.read_sensor(device) #we read the sensor
@@ -124,6 +107,57 @@ def poll_data(i2cCall,piCall,inputCursor):
 				time.sleep(0.1)
 		time.sleep(0.1)
 
+def automatic(i2cCall, piCall, motorCall):
+	while True :
+		mydbControl = pymysql.connect(
+			host = 'localhost',
+			user = str(sys.argv[1]),
+			passwd = str(sys.argv[2]),
+			database = 'controls'
+		)
+		controlCursor = mydbControl.cursor()
+		controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
+		mode = controlCursor.fetchall()[0][1]
+		mydbControl.close()
+		if mode == 1:
+		        mydbControl = pymysql.connect(
+                		host = 'localhost',
+                		user = str(sys.argv[1]),
+                		passwd = str(sys.argv[2]),
+                		database = 'controls'
+        		)
+        		controlCursor = mydbControl.cursor()
+        		controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
+        		threshold = controlCursor.fetchall()[0][1]
+			mydbControl.close()
+
+			mydb = pymysql.connect(
+                               	host = 'localhost',
+                               	user = str(sys.argv[1]),
+                               	passwd = str(sys.argv[2]),
+                               	database = 'measurements'
+                        )
+                        cursor = mydb.cursor()
+			last_data = []
+			for device in i2cCall.devices :
+                        	cursor.execute("SELECT * FROM hygrometry"+str(device)+" ORDER BY time DESC LIMIT 1")
+				data = cursor.fetchall()
+				if len(data) != 0:
+                        		last_data.append(data[0][1])
+                        mydb.close()
+			for device in i2cCall.devices :
+				if len(last_data) == len(i2cCall.devices) :
+					if last_data[i2cCall.devices.index(device)] < i2cCall.threshold[str(device)]:
+						motorCall.turn(500,1,2)
+						print("la plante "+str(device)+" est trop seche!")
+			#print(last_data)
+			time.sleep(10)
+			pass
+
+		else:
+			time.sleep(1)
+
+
 @app.route("/<int:device>/data.json")
 def data(device):
 	mydb = pymysql.connect(
@@ -136,45 +170,94 @@ def data(device):
 	showCursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
         results = showCursor.fetchall()
 	mydb.close()
-	#print(results)
-	#mydb.close()
-#	results = list(results)
-#	results.insert(0,('time','value'))
-#	print(results)
         return json.dumps(results)
 
 @app.route("/graph")
 def graph():
-        return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering)
-#, watering= watering)
+	threshold=[]
+	for device in i2cInstance.devices:
+		threshold.append(i2cInstance.threshold[str(device)])
+	#print(threshold)
+        return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering, threshold = threshold)
 
-#@app.route("/settings")
-#def index():
-#	return render_template("settings.html")
 
 @app.route("/settings", methods = ['POST','GET'])
 def settings():
 	message=''
 	bar=[]
+	mydbControl = pymysql.connect(
+                host = 'localhost',
+                user = str(sys.argv[1]),
+                passwd = str(sys.argv[2]),
+                database = 'controls'
+        )
+	controlCursor = mydbControl.cursor()
+        controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
+        mode = controlCursor.fetchall()[0][1]
+	devices = i2cInstance.devices
+        threshold=[]
+        for device in i2cInstance.devices:
+                threshold.append(i2cInstance.threshold[str(device)])
+
+	if mode == 0:
+		mode='Manual'
+	elif mode == 1:
+		mode ='Automatic'
 	if request.method == 'POST' :
 		if 'submit' in request.form:
 			f_adress = int(request.form["faddress"])
 			n_adress = int(request.form["naddress"])
 			i2cInstance.change_adress(f_adress,n_adress)
 			message = "Changed adress "+ str(f_adress) +" to "+str(n_adress)
-		if 'scan' in request.form:
+		elif 'scan' in request.form:
                     	i2cInstance.scan()
-			bar=i2cInstance.devices
-		return render_template("settings.html", message=message, foobar=bar)
+			devices=i2cInstance.devices
+		elif 'Manual' in request.form:
+			mydbControl = pymysql.connect(
+	                        host = 'localhost',
+        	                user = str(sys.argv[1]),
+                	        passwd = str(sys.argv[2]),
+                        	database = 'controls'
+                	)
+                	controlCursor = mydbControl.cursor()
+			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+                        controlCursor.execute(sql,["mode",1])
+			mydbControl.commit()
+			mydbControl.close()
+			mode='Automatic'
+
+                elif 'Automatic' in request.form:
+                        mydbControl = pymysql.connect(
+                                host = 'localhost',
+                                user = str(sys.argv[1]),
+                                passwd = str(sys.argv[2]),
+                                database = 'controls'
+                        )
+                        controlCursor = mydbControl.cursor()
+                        sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+                        controlCursor.execute(sql,["mode",0])
+                        mydbControl.commit()
+                        mydbControl.close()
+			mode='Manual'
+		elif 'change' in request.form:
+			threshold = []
+			for device in i2cInstance.devices:
+				if len(request.form.get("threshold"+str(device))) > 0:
+					i2cInstance.threshold[str(device)] = int(request.form.get("threshold"+str(device)))
+                		threshold.append(i2cInstance.threshold[str(device)])
+			print(threshold)
+		else:
+			print("not implemented")
+		return render_template("settings.html", message=message, devices=devices, mode=mode,threshold=threshold)
+
 	else :
-		return render_template("settings.html")
+		i2cInstance.scan()
+		devices=i2cInstance.devices
+		return render_template("settings.html", devices=devices, mode=mode,threshold=threshold)
 
 @app.route("/<cmd>", methods = ['GET'])
 def command(cmd=None):
 	command=cmd.upper()
-	#return command[0:5]
-	#global watering
-	#global next
 	if command[0:5] == 'WATER':
                 mydbControl = pymysql.connect(
                         host = 'localhost',
@@ -191,14 +274,10 @@ def command(cmd=None):
 				i2cInstance.On(int(command[5]))
 			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
 			controlCursor.execute(sql,["watering",1])
-			controlCursor.execute(sql,["next",time.time()+2])
-			#lock.acquire()
-			#watering = True
-			#next = time.time() + 1
-			#lock.release()
 			mydbControl.commit()
 			mydbControl.close()
 			print(i2cInstance.watering)
+			motor.turn(1000,1,1)
 			return 'Watering '+command[5]
 		elif command[6:10] == '_OFF':
 			i2cInstance.Off(int(command[5]))
@@ -206,22 +285,18 @@ def command(cmd=None):
 				del i2cInstance.watering[0]
 			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
 			controlCursor.execute(sql,["watering",0])
-			controlCursor.execute(sql,["next",time.time()+599])
 			mydbControl.commit()
                         mydbControl.close()
-			#lock.acquire()
-			#watering = False
-			#next = time.time() + 359
-			#lock.release()
 			print(i2cInstance.watering)
+			motor.off(1)
 			return 'Stop watering '+command[5]
 		else:
                         mydbControl.close()
 			return 'Wrong command'
 	else:
+		print(command)
 		return 'Command not implemented yet' 
-		#i2cInstance.write(0x4,0xC2)
-		#i2cInstance.write(0x4,255)
+
 
 
 if __name__ == '__main__':
@@ -240,9 +315,12 @@ if __name__ == '__main__':
 			sql = "CREATE TABLE hygrometry"+str(device)+" (time INT, measure INT)"
 			measureCursor.execute(sql)
 		mydb.close()
-                thr = Thread(target = poll_data, args=(i2cInstance,pi,measureCursor))
+                thr = Thread(target = poll_data, args=(i2cInstance,pi))
                 thr.daemon = True
                 thr.start()
+		thr2 = Thread(target = automatic, args=(i2cInstance,pi,motor))
+                thr2.daemon = True
+                thr2.start()
                 app.run(host='0.0.0.0', debug=False ,port=9090, threaded=True)
 
         except(KeyboardInterrupt):
@@ -261,7 +339,4 @@ if __name__ == '__main__':
                 cursor.execute(sql,["watering",0])
 		mydb.commit()
 		mydb.close()
-		#mydb.close()
-		#mydbControl.close()
-
 

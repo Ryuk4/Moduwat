@@ -30,13 +30,17 @@
 <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/boost.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.13/moment-timezone-with-data-2012-2022.min.js"></script>
+
 
 <script type="text/javascript">
 	var maincontainer = $('#maincontainer');
 	var devices = {{ devices }} ;
 	var watering = {{ watering }} ;
+	var threshold = {{ threshold }};
 	var containers = [];
-	button_row = [];
+	var button_row = [];
 	for (let i = 0; i < devices.length; i++) {
 	        containers[i] = document.createElement("div");
 	        document.getElementById("maincontainer").appendChild(containers[i]);
@@ -71,8 +75,8 @@
 		document.getElementById("controls").appendChild(group);
 	        Highcharts.getJSON('http://192.168.1.84:9090/'.concat(devices[i],'/data.json'), function (data) {
 	                // Create the chart
-			Highcharts.chart(containers[i],{
-	                //Highcharts.stockChart(containers[i],{
+			//Highcharts.chart(containers[i],{
+	                Highcharts.stockChart(containers[i],{
 				chart : {
 					zoomType: 'x'
 				},
@@ -82,9 +86,22 @@
 	                        title : {
 	                                text : 'Sensor'.concat(String(devices[i]))
 	                        },
+				time: {
+                                	timezone: 'Europe/Oslo'
+	                        },
 				xAxis : {
 					type : 'datetime',
-					},
+					ordinal: false
+				},
+				yAxis:{
+					plotBands: [{
+						color: 'red',
+						from: 0,
+						to: threshold[i]
+					}],
+					min: 0,
+					max: 100
+				},
 	                        series : [{
 	                                name : 'Humidity',
 	                                data : data,

@@ -13,6 +13,7 @@ class I2c(object):
 		self.devices = []
 		self.watering = []
 		self.dataList = []
+		self.threshold = {}
 		self.pi=pi
 	def scan(self):
 		for device in range(3,70):
@@ -38,6 +39,7 @@ class I2c(object):
 				self.pi.i2c_close(h)
 			else:
 				self.devices.append(device)
+				self.threshold[str(device)] = 10
 				self.devices.sort()
 				del self.available_adresses[self.available_adresses.index(device)]
 				self.pi.i2c_close(h)
@@ -60,6 +62,7 @@ class I2c(object):
 			del self.watering[self.watering.index(old_adr)]
 			self.watering.append(new_adr)
 		self.devices.append(new_adr)
+		self.threshold[str(new_adr)] = 10
 		self.devices.sort()
 
 	def write(self, device, pwm) :
@@ -103,8 +106,7 @@ class I2c(object):
 			print e
 
 	def to_unix_timestamp(self,ts):
-		"""
-		Get the unix timestamp (seconds from Unix epoch) 
+		"""Get the unix timestamp (seconds from Unix epoch) 
 		from a datetime object
 		"""
 		start = datetime.datetime(year=1970, month=1, day=1)
