@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import  time
 import pigpio
@@ -43,7 +44,7 @@ class Motor(object):
 			speeds.append(self.previous_dir*self.previous_spd+diff_speed/10*(i+1))
 			ramp.append([speeds[i],int(ramp_time/10.0*abs(speeds[i])/60*48)])
 		#ramp[9][1] = 10000
-		print(ramp)
+		#print(ramp)
 		self.pi.wave_clear()
 		wid = [-1]*10
 		for i in range(10):
@@ -74,18 +75,22 @@ class Motor(object):
 		self.direction = direction
 		self.start_water = time.time()
 		self.watering = True
-		print self.speed
+		time.sleep(ramp_time)
+		flow = self.flow()
+		#print self.speed
+		return flow
 
 
 	def off(self,ramp_time):
-		self.turn(0,1,ramp_time)
-		time.sleep(ramp_time)
-		self.pi.write(self.enable,1) 
+		flow = self.turn(0,1,ramp_time)
+		self.pi.write(self.enable,1)
+		self.watering = False
+		return flow
 
 	def flow(self):
+		new_flow = 0
 		if self.watering : #if watering then flow can be updated
 			now = time.time()
-
 			water_time = now - self.start_water #time from when it started watering or when flow was last used
 			#flow calculations positive if direction is 1 and negative if position is 0
 			if self.direction == 0:
@@ -94,21 +99,21 @@ class Motor(object):
 				direction = 1
 
 			if water_time > self.ramp_time : #if ramping to speed is finished then flow = ramp flow + flow till end of ramping
-				ramp_flowr =  ((direction*self.speed-self.previous_dir*self.previous_spd)/2 + self.previous_dir*self.previous_spd) * self.ramp_time * self.flowrate
-				self.flowr += ramp_flow
-				self.flowr += direction * self.speed * (self.water_time - self.ramp_time) * self.flowrate
+				ramp_flow =  ((direction*self.speed-self.previous_dir*self.previous_spd)/2 + self.previous_dir*self.previous_spd) * self.ramp_time * self.flowrate /1000/60
+				new_flow += ramp_flow
+				new_flow += direction * self.speed * (water_time - self.ramp_time) * self.flowrate /1000/60
 
 			else : #else flow = ramp flow
-				ramp_flowr =  ((direction*self.speed-self.previous_dir*self.previous_spd)/2 + self.previous_dir*self.previous_spd) * self.water_time * self.flowrate
-				self.flowr += ramp_flow
-			print self.flowr
-			self.flow += direction * self.speed * self.water_time * self.flowrate
+				ramp_flow =  ((direction*self.speed-self.previous_dir*self.previous_spd)/2 + self.previous_dir*self.previous_spd) * water_time * self.flowrate /1000/60
+				new_flow += ramp_flow
+			self.flowr += new_flow
+			#print new_flow
 			#let s prevent calculation of another ramping if speed hasn't changed
 			self.previous_spd = self.speed
 			self.previous_dir = self.direction
 			self.start_water = time.time()
-			return self.flowr
+			return new_flow
 
 		else : #else same flow as before
-			return self.flowr
+			return new_flow
 

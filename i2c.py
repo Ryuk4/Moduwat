@@ -14,6 +14,7 @@ class I2c(object):
 		self.watering = []
 		self.dataList = []
 		self.threshold = {}
+		self.flow = {}
 		self.pi=pi
 	def scan(self):
 		for device in range(3,70):
@@ -27,6 +28,8 @@ class I2c(object):
 					del self.devices[self.devices.index(device)]
 					self.available_adresses.append(device)
 					self.available_adresses.sort()
+					del self.threshold[str(device)]
+					del self.flow[str(device)]
 				self.pi.i2c_close(h)
 				continue
 
@@ -40,6 +43,7 @@ class I2c(object):
 			else:
 				self.devices.append(device)
 				self.threshold[str(device)] = 10
+				self.flow[str(device)] = 0
 				self.devices.sort()
 				del self.available_adresses[self.available_adresses.index(device)]
 				self.pi.i2c_close(h)

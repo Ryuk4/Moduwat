@@ -31,6 +31,7 @@
 <script>
 	var devices = {{ devices }} ;
 	var threshold = {{ threshold }} ;
+	var flows = {{ flows }} ;
 	var entry_row = [];
 	group = document.createElement("table");
 	row_1 = document.createElement("tr");
@@ -40,9 +41,12 @@
 	column_2.innerHTML = "Current threshold";
 	column_3 = document.createElement("th");
         column_3.innerHTML = "New threshold";
+	column_4 = document.createElement("th");
+	column_4.innerHTML = "flow";
         row_1.appendChild(column_1);
         row_1.appendChild(column_2);
         row_1.appendChild(column_3);
+	row_1.appendChild(column_4);
         group.appendChild(row_1);
 
         for (let i = 0; i < devices.length; i++) {
@@ -53,13 +57,15 @@
                 column_21.innerHTML = threshold[i];
 		column_31 = document.createElement("td");
 		input31 = document.createElement("input");
-		input31.type = "text"
-		input31.name = "threshold".concat(devices[i]) 
-		//input31.value = "threshold".concat(devices[i])
+		input31.type = "text";
+		input31.name = "threshold".concat(devices[i]);
+		column_41 = document.createElement("td");
+		column_41.innerHTML = flows[i]; 
 		column_31.appendChild(input31);
 		entry_row[i].appendChild(column_11); 
 		entry_row[i].appendChild(column_21);
 		entry_row[i].appendChild(column_31);
+		entry_row[i].appendChild(column_41);
 		group.appendChild(entry_row[i]);
 	}
 	document.getElementById("devices").appendChild(group);

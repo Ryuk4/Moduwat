@@ -196,14 +196,25 @@ def settings():
         mode = controlCursor.fetchall()[0][1]
 	devices = i2cInstance.devices
         threshold=[]
+	if len(i2cInstance.watering) == 1:
+	        i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
+
+	flows = []
         for device in i2cInstance.devices:
                 threshold.append(i2cInstance.threshold[str(device)])
+		flows.append(i2cInstance.flow[str(device)])
 
 	if mode == 0:
 		mode='Manual'
 	elif mode == 1:
 		mode ='Automatic'
 	if request.method == 'POST' :
+                if len(i2cInstance.watering) == 1:
+                         i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
+	        flows = []
+	        for device in i2cInstance.devices:
+                	flows.append(i2cInstance.flow[str(device)])
+
 		if 'submit' in request.form:
 			f_adress = int(request.form["faddress"])
 			n_adress = int(request.form["naddress"])
@@ -212,6 +223,10 @@ def settings():
 		elif 'scan' in request.form:
                     	i2cInstance.scan()
 			devices=i2cInstance.devices
+                        threshold = []
+                        for device in i2cInstance.devices:
+				threshold.append(i2cInstance.threshold[str(device)])
+
 		elif 'Manual' in request.form:
 			mydbControl = pymysql.connect(
 	                        host = 'localhost',
@@ -245,15 +260,15 @@ def settings():
 				if len(request.form.get("threshold"+str(device))) > 0:
 					i2cInstance.threshold[str(device)] = int(request.form.get("threshold"+str(device)))
                 		threshold.append(i2cInstance.threshold[str(device)])
-			print(threshold)
+			#print(threshold)
 		else:
 			print("not implemented")
-		return render_template("settings.html", message=message, devices=devices, mode=mode,threshold=threshold)
+		return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows)
 
 	else :
 		i2cInstance.scan()
 		devices=i2cInstance.devices
-		return render_template("settings.html", devices=devices, mode=mode,threshold=threshold)
+		return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows)
 
 @app.route("/<cmd>", methods = ['GET'])
 def command(cmd=None):
@@ -270,16 +285,19 @@ def command(cmd=None):
 			if len(i2cInstance.watering) == 0:
 				i2cInstance.On(int(command[5]))
 			elif len(i2cInstance.watering) == 1:
+				i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
 				i2cInstance.Off(i2cInstance.watering[0])
 				i2cInstance.On(int(command[5]))
 			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
 			controlCursor.execute(sql,["watering",1])
 			mydbControl.commit()
 			mydbControl.close()
-			print(i2cInstance.watering)
-			motor.turn(1000,1,1)
+			#print(i2cInstance.watering)
+			i2cInstance.flow[command[5]] += motor.turn(1000,1,1)
 			return 'Watering '+command[5]
 		elif command[6:10] == '_OFF':
+			i2cInstance.flow[command[5]] += motor.flow()
+			i2cInstance.flow[command[5]] += motor.off(1)
 			i2cInstance.Off(int(command[5]))
 			if len(i2cInstance.watering) == 1:
 				del i2cInstance.watering[0]
@@ -287,15 +305,14 @@ def command(cmd=None):
 			controlCursor.execute(sql,["watering",0])
 			mydbControl.commit()
                         mydbControl.close()
-			print(i2cInstance.watering)
-			motor.off(1)
+			#print(i2cInstance.watering)
 			return 'Stop watering '+command[5]
 		else:
                         mydbControl.close()
 			return 'Wrong command'
 	else:
 		print(command)
-		return 'Command not implemented yet' 
+		return 'Command not implemented yet'
 
 
 
