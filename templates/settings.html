@@ -3,25 +3,28 @@
    <link rel="stylesheet" href="{{ url_for('static', filename='css/toggle.css') }}">
    <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
    <body>
+      <div id="flow">
+        The system has used {{ flows[0] }} L since {{ date }}
+      </div>
       {% if message %}
-         <p>{{ message }}</p>
+        <p>{{ message }}</p>
       {% endif %}
-      <form action = "" method = "post">
+      <form action= "" method= "post">
          <p>Enter adress to change</p>
-         <p><input type = "text" name = "faddress" /></p>
+         <p><input type= "text" name= "faddress" /></p>
 	 <p>Enter new address</p>
-	 <p><input type = "text" name = "naddress" /></p>
-         <p><input type = "submit" name = "submit" value = "submit" /></p>
+	 <p><input type= "text" name=  "naddress" /></p>
+         <p><input type= "submit" name= "submit" value= "submit" /></p>
       </form>
-      <form action = "" method = "post">
-         <p><input type = "submit" name = "scan" value = "scan" /></p>
+      <form action= "" method= "post">
+         <p><input type=  "submit" name= "scan" value= "scan" /></p>
       </form>
       
-      <form action = "" id = "devices" method = "post">
+      <form action= "" id= "devices" method= "post">
 
       </form> 
-      <form action ="" method = "post">
-	<p><input type = "submit" name = {{ mode }} value = {{ mode }} /></p>
+      <form action="" method= "post">
+	<p><input type= "submit" name= {{ mode }} value= {{ mode }} /></p>
       </form>
 	
 	<a href="graph">Humidity plots</a>
@@ -60,7 +63,7 @@
 		input31.type = "text";
 		input31.name = "threshold".concat(devices[i]);
 		column_41 = document.createElement("td");
-		column_41.innerHTML = flows[i]; 
+		column_41.innerHTML = flows[i+1]; 
 		column_31.appendChild(input31);
 		entry_row[i].appendChild(column_11); 
 		entry_row[i].appendChild(column_21);

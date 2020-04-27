@@ -14,7 +14,7 @@ import pymysql
 import pymysql.cursors
 import sys
 import sqlite3
-
+import datetime
 values = deque(maxlen=1000)
 
 pi=pigpio.pi()
@@ -26,6 +26,8 @@ motor = Motor(pi)
 
 app= Flask(__name__)
 
+d = datetime.datetime.now()
+date = str(d.day)+"/"+str(d.month)+"/"+str(d.year)+" at "+str(d.hour)+":"+str(d.minute)+":"+str(d.second)
 
 def poll_data(i2cCall,piCall):
         next=time.time()
@@ -200,6 +202,7 @@ def settings():
 	        i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
 
 	flows = []
+	flows.append(motor.flowr)
         for device in i2cInstance.devices:
                 threshold.append(i2cInstance.threshold[str(device)])
 		flows.append(i2cInstance.flow[str(device)])
@@ -212,6 +215,7 @@ def settings():
                 if len(i2cInstance.watering) == 1:
                          i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
 	        flows = []
+		flows.append(motor.flowr)
 	        for device in i2cInstance.devices:
                 	flows.append(i2cInstance.flow[str(device)])
 
@@ -262,13 +266,14 @@ def settings():
                 		threshold.append(i2cInstance.threshold[str(device)])
 			#print(threshold)
 		else:
+			message = "Not implemented"
 			print("not implemented")
-		return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows)
+		return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date)
 
 	else :
 		i2cInstance.scan()
 		devices=i2cInstance.devices
-		return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows)
+		return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date)
 
 @app.route("/<cmd>", methods = ['GET'])
 def command(cmd=None):

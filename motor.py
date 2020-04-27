@@ -10,7 +10,7 @@ class Motor(object):
 		self.speed = 0
 		self.direction = 1
 		self.flowr = 0
-		self.flowrate = 448 #basic flowrate in mL/min for speed = 1000 tr/min
+		self.flowrate = 0.448 #basic flowrate in mL/min for speed = 1000 tr/min
 		self.start_water = 0
 		self.watering = False
 		self.DIR = 23 #direction pin
