@@ -16,6 +16,7 @@ class I2c(object):
 		self.threshold = {}
 		self.flow = {}
 		self.pi=pi
+		self.dry_list = []
 	def scan(self):
 		for device in range(3,70):
 			#print(str(device)+' '+str(time.time()))

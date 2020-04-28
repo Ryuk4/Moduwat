@@ -38,12 +38,21 @@
 	var maincontainer = $('#maincontainer');
 	var devices = {{ devices }} ;
 	var watering = {{ watering }} ;
-	var threshold = {{ threshold }};
+	var threshold = {{ threshold }} ;
 	var containers = [];
 	var button_row = [];
+	var dry_list = {{ dry }} ;
+	var header = [];
 	for (let i = 0; i < devices.length; i++) {
 	        containers[i] = document.createElement("div");
+		header[i] = document.createElement("div");
+
+		if(dry_list.includes(devices[i])){
+			header[i].innerHTML = "The device ".concat(devices[i]," is too dry")
+		}
+		document.getElementById("maincontainer").appendChild(header[i]);
 	        document.getElementById("maincontainer").appendChild(containers[i]);
+
 		group = document.createElement("table");
 		button_row[i] = document.createElement("tr");
 		//button_row[i].className = "row";
@@ -63,7 +72,7 @@
 			if(devices[i] == watering[0]){
 				btn.checked = true;
 			}
-		}		
+		}
 		span = document.createElement("span");
 		span.className = "slider round";
 		label.appendChild(btn);
@@ -75,7 +84,6 @@
 		document.getElementById("controls").appendChild(group);
 	        Highcharts.getJSON('http://192.168.1.84:9090/'.concat(devices[i],'/data.json'), function (data) {
 	                // Create the chart
-			//Highcharts.chart(containers[i],{
 	                Highcharts.stockChart(containers[i],{
 				chart : {
 					zoomType: 'x'
@@ -95,7 +103,7 @@
 				},
 				yAxis:{
 					plotBands: [{
-						color: 'red',
+						color: '#FFCCCB',
 						from: 0,
 						to: threshold[i]
 					}],

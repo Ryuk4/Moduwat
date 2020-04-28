@@ -105,6 +105,14 @@ def poll_data(i2cCall,piCall):
                         	       	measureCursor.execute(sql,val)
                         	       	mydb.commit()
 					mydb.close()
+					if read < i2cCall.threshold[str(device)]:
+						if device not in i2cCall.dry_list:
+							i2cCall.dry_list.append(device)
+					elif read > i2cCall.threshold[str(device)]:
+						if device in i2cCall.dry_list:
+							del i2cCall.dry_list[i2cCall.dry_list.index(device)]
+					else:
+						pass
 				#print('tps2'+str(time.time()-temps1))
 				time.sleep(0.1)
 		time.sleep(0.1)
@@ -180,7 +188,7 @@ def graph():
 	for device in i2cInstance.devices:
 		threshold.append(i2cInstance.threshold[str(device)])
 	#print(threshold)
-        return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering, threshold = threshold)
+        return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering, threshold = threshold, dry = i2cInstance.dry_list)
 
 
 @app.route("/settings", methods = ['POST','GET'])
