@@ -194,44 +194,44 @@ def graph():
 @app.route("/settings", methods = ['POST','GET'])
 def settings():
 	message=''
-	bar=[]
-	mydbControl = pymysql.connect(
+        mydbControl = pymysql.connect(
                 host = 'localhost',
                 user = str(sys.argv[1]),
                 passwd = str(sys.argv[2]),
                 database = 'controls'
         )
-	controlCursor = mydbControl.cursor()
+        controlCursor = mydbControl.cursor()
         controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
         mode = controlCursor.fetchall()[0][1]
-	devices = i2cInstance.devices
-        threshold=[]
-	if len(i2cInstance.watering) == 1:
-	        i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
+	mydbControl.close()
+        if mode == 0:
+                mode='Manual'
+        elif mode == 1:
+                mode ='Automatic'
 
-	flows = []
-	flows.append(motor.flowr)
-        for device in i2cInstance.devices:
-                threshold.append(i2cInstance.threshold[str(device)])
-		flows.append(i2cInstance.flow[str(device)])
+	if request.method == 'GET':
+		i2cInstance.scan()
+		if len(i2cInstance.watering) == 1:
+		        i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
 
-	if mode == 0:
-		mode='Manual'
-	elif mode == 1:
-		mode ='Automatic'
-	if request.method == 'POST' :
-                if len(i2cInstance.watering) == 1:
-                         i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
-	        flows = []
+		flows = []
 		flows.append(motor.flowr)
+		threshold=[]
 	        for device in i2cInstance.devices:
-                	flows.append(i2cInstance.flow[str(device)])
+	                threshold.append(i2cInstance.threshold[str(device)])
+			flows.append(i2cInstance.flow[str(device)])
+                devices=i2cInstance.devices
+                return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date)
 
+
+	elif request.method == 'POST' :
+		#change i2c address
 		if 'submit' in request.form:
 			f_adress = int(request.form["faddress"])
 			n_adress = int(request.form["naddress"])
 			i2cInstance.change_adress(f_adress,n_adress)
 			message = "Changed adress "+ str(f_adress) +" to "+str(n_adress)
+		#scan i2c addresses
 		elif 'scan' in request.form:
                     	i2cInstance.scan()
 			devices=i2cInstance.devices
@@ -239,6 +239,7 @@ def settings():
                         for device in i2cInstance.devices:
 				threshold.append(i2cInstance.threshold[str(device)])
 
+		#change mode to automatic
 		elif 'Manual' in request.form:
 			mydbControl = pymysql.connect(
 	                        host = 'localhost',
@@ -252,7 +253,7 @@ def settings():
 			mydbControl.commit()
 			mydbControl.close()
 			mode='Automatic'
-
+		#change mode to manual
                 elif 'Automatic' in request.form:
                         mydbControl = pymysql.connect(
                                 host = 'localhost',
@@ -266,6 +267,7 @@ def settings():
                         mydbControl.commit()
                         mydbControl.close()
 			mode='Manual'
+		#change threshold
 		elif 'change' in request.form:
 			threshold = []
 			for device in i2cInstance.devices:
@@ -273,15 +275,24 @@ def settings():
 					i2cInstance.threshold[str(device)] = int(request.form.get("threshold"+str(device)))
                 		threshold.append(i2cInstance.threshold[str(device)])
 			#print(threshold)
+		#request not implemented yet
 		else:
 			message = "Not implemented"
 			print("not implemented")
+
+                if len(i2cInstance.watering) == 1:
+                         i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
+                flows = []
+                flows.append(motor.flowr)
+		threshold=[]
+                for device in i2cInstance.devices:
+                        flows.append(i2cInstance.flow[str(device)])
+			threshold.append(i2cInstance.threshold[str(device)])
+
+		devices = i2cInstance.devices
 		return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date)
 
-	else :
-		i2cInstance.scan()
-		devices=i2cInstance.devices
-		return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date)
+
 
 @app.route("/<cmd>", methods = ['GET'])
 def command(cmd=None):
