@@ -108,6 +108,7 @@ class I2c(object):
 			self.pi.i2c_close(h)
 			return val
 		except Exception as e:
+			self.pi.i2c_close(h)
 			print e
 
 	def to_unix_timestamp(self,ts):

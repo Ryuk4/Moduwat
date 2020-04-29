@@ -306,11 +306,11 @@ def command(cmd=None):
 			mydbControl.commit()
 			mydbControl.close()
 			#print(i2cInstance.watering)
-			i2cInstance.flow[command[5]] += motor.turn(1000,1,1)
+			i2cInstance.flow[str(command[5])] += motor.turn(1000,1,1)
 			return 'Watering '+command[5]
 		elif command[6:10] == '_OFF':
-			i2cInstance.flow[command[5]] += motor.flow()
-			i2cInstance.flow[command[5]] += motor.off(1)
+			i2cInstance.flow[str(command[5])] += motor.flow()
+			i2cInstance.flow[str(command[5])] += motor.off(1)
 			i2cInstance.Off(int(command[5]))
 			if len(i2cInstance.watering) == 1:
 				del i2cInstance.watering[0]
