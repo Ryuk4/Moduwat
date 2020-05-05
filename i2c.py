@@ -63,13 +63,15 @@ class I2c(object):
 			del self.devices[self.devices.index(old_adr)]
 			self.available_adresses.append(old_adr)
 			self.available_adresses.sort()
+			self.flow[str(new_adr)] = self.flow[str(old_adr)]
+			del self.flow[str(old_adr)]
+		elif old_adr == 3:
+			self.flow[str(new_adr)] = 0
 		if old_adr in self.watering:
 			del self.watering[self.watering.index(old_adr)]
 			self.watering.append(new_adr)
 		self.devices.append(new_adr)
 		self.threshold[str(new_adr)] = 10
-		self.flow[str(new_adr)] = self.flow[str(old_adr)]
-		del self.flow[str(old_adr)]
 		self.devices.sort()
 
 	def write(self, device, pwm) :
