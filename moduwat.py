@@ -24,7 +24,7 @@ motor = Motor(pi)
 #profiles = {'Rosemary': {'dry_value':10,'dry_time':3000,KETPmoy: ,KETPmax: }}
 
 
-
+database_path = "/media/NAS/"
 
 app= Flask(__name__)
 
@@ -38,16 +38,11 @@ def poll_data(i2cCall,piCall):
 	delay = time.time()
         while True:
 		now=time.time()
-		mydbControl = pymysql.connect(
-	                host = 'localhost',
-        	        user = str(sys.argv[1]),
-                        passwd = str(sys.argv[2]),
-                        database = 'controls'
-		)
+		mydbControl = sqlite3.connect(database_path+"controls.db")
                 controlCursor = mydbControl.cursor()
 		controlCursor.execute("SELECT variable,data from controls where variable = 'watering'")
 		watering = controlCursor.fetchall()[0][1]
-		sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+		sql = "REPLACE INTO controls(variable,data) VALUES(?,?)"
 		if watering==1:
 			if not changed:
 				update = True
@@ -74,12 +69,7 @@ def poll_data(i2cCall,piCall):
 					update = False
 		mydbControl.close()
 
-		mydbControl = pymysql.connect(
-                        host = 'localhost',
-                        user = str(sys.argv[1]),
-                        passwd = str(sys.argv[2]),
-                        database = 'controls'
-                )
+		mydbControl = sqlite3.connect(database_path+"controls.db")
                 controlCursor = mydbControl.cursor()
                 controlCursor.execute("SELECT variable,data from controls where variable = 'next'")
                 next = controlCursor.fetchall()[0][1]
@@ -93,16 +83,11 @@ def poll_data(i2cCall,piCall):
 				#print('tps1'+str(time.time()-temps1))
 				#print(read)
         	               	nowread = time.time() #we read the time when the measurement was done
-                	       	sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (%s,%s)"
+                	       	sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (?,?)"
                        		if read is not None:
 					val = (nowread,read)
                         	       	values.append(val)
-					mydb = pymysql.connect(
-					        host = 'localhost',
-        					user = str(sys.argv[1]),
-        					passwd = str(sys.argv[2]),
-        					database = 'measurements'
-					)
+					mydb = sqlite3.connect(database_path+"measurements.db")
 					measureCursor = mydb.cursor()
                         	       	measureCursor.execute(sql,val)
                         	       	mydb.commit()
@@ -121,34 +106,19 @@ def poll_data(i2cCall,piCall):
 
 def automatic(i2cCall, piCall, motorCall):
 	while True :
-		mydbControl = pymysql.connect(
-			host = 'localhost',
-			user = str(sys.argv[1]),
-			passwd = str(sys.argv[2]),
-			database = 'controls'
-		)
+		mydbControl = sqlite3.connect(database_path+"controls.db")
 		controlCursor = mydbControl.cursor()
 		controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
 		mode = controlCursor.fetchall()[0][1]
 		mydbControl.close()
 		if mode == 1:
-		        mydbControl = pymysql.connect(
-                		host = 'localhost',
-                		user = str(sys.argv[1]),
-                		passwd = str(sys.argv[2]),
-                		database = 'controls'
-        		)
+		        mydbControl = sqlite3.connect(database_path+"controls.db")
         		controlCursor = mydbControl.cursor()
         		controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
         		threshold = controlCursor.fetchall()[0][1]
 			mydbControl.close()
 
-			mydb = pymysql.connect(
-                               	host = 'localhost',
-                               	user = str(sys.argv[1]),
-                               	passwd = str(sys.argv[2]),
-                               	database = 'measurements'
-                        )
+			mydb = sqlite3.connect(database_path+"measurements.db")
                         cursor = mydb.cursor()
 			last_data = []
 			for device in i2cCall.devices :
@@ -174,12 +144,7 @@ def automatic(i2cCall, piCall, motorCall):
 
 @app.route("/<int:device>/data.json")
 def data(device):
-	mydb = pymysql.connect(
-        	host = 'localhost',
-        	user = str(sys.argv[1]),
-        	passwd = str(sys.argv[2]),
-        	database = 'measurements'
-	)
+	mydb = sqlite3.connect(database_path+"measurements.db")
 	showCursor = mydb.cursor()
 	showCursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
         results = showCursor.fetchall()
@@ -198,12 +163,7 @@ def graph():
 @app.route("/settings", methods = ['POST','GET'])
 def settings():
 	message=''
-        mydbControl = pymysql.connect(
-                host = 'localhost',
-                user = str(sys.argv[1]),
-                passwd = str(sys.argv[2]),
-                database = 'controls'
-        )
+        mydbControl = sqlite3.connect(database_path+"controls.db")
         controlCursor = mydbControl.cursor()
         controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
 	mode = controlCursor.fetchall()[0][1]
@@ -251,28 +211,18 @@ def settings():
 				message = "New plant detected"
 		#change mode to automatic
 		elif 'Manual' in request.form:
-			mydbControl = pymysql.connect(
-	                        host = 'localhost',
-        	                user = str(sys.argv[1]),
-                	        passwd = str(sys.argv[2]),
-                        	database = 'controls'
-                	)
+			mydbControl = sqlite3.connect(database_path+"controls.db")
                 	controlCursor = mydbControl.cursor()
-			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+			sql = "REPLACE INTO controls(variable,data) VALUES(?,?)"
                         controlCursor.execute(sql,["mode",1])
 			mydbControl.commit()
 			mydbControl.close()
 			mode='Automatic'
 		#change mode to manual
                 elif 'Automatic' in request.form:
-                        mydbControl = pymysql.connect(
-                                host = 'localhost',
-                                user = str(sys.argv[1]),
-                                passwd = str(sys.argv[2]),
-                                database = 'controls'
-                        )
+                        mydbControl = sqlite3.connect(database_path+"controls.db")
                         controlCursor = mydbControl.cursor()
-                        sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+                        sql = "REPLACE INTO controls(variable,data) VALUES(?,?)"
                         controlCursor.execute(sql,["mode",0])
                         mydbControl.commit()
                         mydbControl.close()
@@ -308,12 +258,7 @@ def settings():
 def command(cmd=None):
 	command=cmd.upper()
 	if command[0:5] == 'WATER':
-                mydbControl = pymysql.connect(
-                        host = 'localhost',
-                        user = str(sys.argv[1]),
-                        passwd = str(sys.argv[2]),
-                        database = 'controls'
-                )
+                mydbControl = sqlite3.connect(database_path+"controls.db")
 		controlCursor = mydbControl.cursor()
 		if command[6:9] == '_ON':
 			if len(i2cInstance.watering) == 0:
@@ -322,7 +267,7 @@ def command(cmd=None):
 				i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
 				i2cInstance.Off(i2cInstance.watering[0])
 				i2cInstance.On(int(command[5]))
-			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+			sql = "REPLACE INTO controls(variable,data) VALUES(?,?)"
 			controlCursor.execute(sql,["watering",1])
 			mydbControl.commit()
 			mydbControl.close()
@@ -335,7 +280,7 @@ def command(cmd=None):
 			i2cInstance.Off(int(command[5]))
 			if len(i2cInstance.watering) == 1:
 				del i2cInstance.watering[0]
-			sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+			sql = "REPLACE INTO controls(variable,data) VALUES(?,?)"
 			controlCursor.execute(sql,["watering",0])
 			mydbControl.commit()
                         mydbControl.close()
@@ -353,12 +298,7 @@ def command(cmd=None):
 if __name__ == '__main__':
         try:
 		i2cInstance.scan()
-		mydb = pymysql.connect(
-		        host = 'localhost',
-		        user = str(sys.argv[1]),
-		        passwd = str(sys.argv[2]),
-		        database = 'measurements'
-		)
+		mydb = sqlite3.connect(database_path+"measurements.db")
 		measureCursor = mydb.cursor()
 		for device in i2cInstance.devices:
 			sql1 = "DROP TABLE IF EXISTS hygrometry"+str(device)
@@ -379,14 +319,9 @@ if __name__ == '__main__':
 	finally:
 		if len(i2cInstance.watering) >0:
 			i2cInstance.Off(i2cInstance.watering[0])
-		mydb = pymysql.connect(
-                        host = 'localhost',
-                        user = str(sys.argv[1]),
-                        passwd = str(sys.argv[2]),
-                        database = 'controls'
-                )
+		mydb = sqlite3.connect(database_path+"controls.db")
 		cursor = mydb.cursor()
-		sql = "REPLACE INTO controls(variable,data) VALUES(%s,%s)"
+		sql = "REPLACE INTO controls(variable,data) VALUES(?,?)"
                 cursor.execute(sql,["watering",0])
 		mydb.commit()
 		mydb.close()
