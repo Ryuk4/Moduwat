@@ -82,13 +82,34 @@
 		button_row[i].appendChild(column_2);
 		group.appendChild(button_row[i]);
 		document.getElementById("controls").appendChild(group);
-	        Highcharts.getJSON('http://192.168.1.84:9090/'.concat(devices[i],'/data.json'), function (data) {
+	        Highcharts.getJSON('/'.concat(devices[i],'/data.json'), function (data) {
 	                // Create the chart
 	                Highcharts.stockChart(containers[i],{
 				chart : {
 					zoomType: 'x'
 				},
 	                        rangeSelector : {
+					buttons: [{
+						count: 1,
+						type: 'hour',
+						text: '1H'
+					}, {
+						count: 1,
+						type: 'day',
+						text: '1D'
+					}, {
+						count: 1,
+						type: 'week',
+						text: '1W'
+					}, {
+						count: 1,
+						type: 'month',
+						text: '1M'
+					}, {
+						type: 'all',
+						text: 'All'
+					}],
+					inputEnabled: false,					
 	                                selected : 1
 	                        },
 	                        title : {

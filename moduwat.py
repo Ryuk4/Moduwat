@@ -18,10 +18,12 @@ import datetime
 values = deque(maxlen=1000)
 
 pi=pigpio.pi()
-#pi.set_mode(23,pigpio.INPUT)
-#pi.set_pull_up_down(23,pigpio.PUD_UP)
 i2cInstance = I2c(pi)
 motor = Motor(pi)
+
+#profiles = {'Rosemary': {'dry_value':10,'dry_time':3000,KETPmoy: ,KETPmax: }}
+
+
 
 
 app= Flask(__name__)
@@ -159,6 +161,8 @@ def automatic(i2cCall, piCall, motorCall):
 				if len(last_data) == len(i2cCall.devices) :
 					if last_data[i2cCall.devices.index(device)] < i2cCall.threshold[str(device)]:
 						motorCall.turn(500,1,2)
+						time.sleep(2)
+						motorCall.off(2)
 						print("la plante "+str(device)+" est trop seche!")
 			#print(last_data)
 			time.sleep(10)
@@ -202,7 +206,7 @@ def settings():
         )
         controlCursor = mydbControl.cursor()
         controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
-        mode = controlCursor.fetchall()[0][1]
+	mode = controlCursor.fetchall()[0][1]
 	mydbControl.close()
         if mode == 0:
                 mode='Manual'
@@ -210,7 +214,7 @@ def settings():
                 mode ='Automatic'
 
 	if request.method == 'GET':
-		i2cInstance.scan()
+		#i2cInstance.scan()
 		if len(i2cInstance.watering) == 1:
 		        i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
 
@@ -226,19 +230,25 @@ def settings():
 
 	elif request.method == 'POST' :
 		#change i2c address
-		if 'submit' in request.form:
+		if 'ad_change' in request.form:
 			f_adress = int(request.form["faddress"])
 			n_adress = int(request.form["naddress"])
 			i2cInstance.change_adress(f_adress,n_adress)
 			message = "Changed adress "+ str(f_adress) +" to "+str(n_adress)
 		#scan i2c addresses
 		elif 'scan' in request.form:
+			devicesBef=[]
+			for device in i2cInstance.devices:
+				devicesBef.append(device)
                     	i2cInstance.scan()
 			devices=i2cInstance.devices
                         threshold = []
                         for device in i2cInstance.devices:
 				threshold.append(i2cInstance.threshold[str(device)])
 
+			if devicesBef != devices:
+				#return render_template("select_profile.html")
+				message = "New plant detected"
 		#change mode to automatic
 		elif 'Manual' in request.form:
 			mydbControl = pymysql.connect(

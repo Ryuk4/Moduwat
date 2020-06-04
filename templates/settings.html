@@ -14,7 +14,7 @@
          <p><input type= "text" name= "faddress" /></p>
 	 <p>Enter new address</p>
 	 <p><input type= "text" name=  "naddress" /></p>
-         <p><input type= "submit" name= "submit" value= "submit" /></p>
+         <p><input type= "submit" name= "ad_change" value= "change adress" /></p>
       </form>
       <form action= "" method= "post">
          <p><input type=  "submit" name= "scan" value= "scan" /></p>
@@ -45,12 +45,16 @@
 	column_3 = document.createElement("th");
         column_3.innerHTML = "New threshold";
 	column_4 = document.createElement("th");
-	column_4.innerHTML = "flow";
+	column_4.innerHTML = "Flow";
+        column_5 = document.createElement("th");
+        column_5.innerHTML = "Plant profile";
         row_1.appendChild(column_1);
         row_1.appendChild(column_2);
         row_1.appendChild(column_3);
 	row_1.appendChild(column_4);
+	row_1.appendChild(column_5);
         group.appendChild(row_1);
+	document.getElementById("devices").appendChild(group);
 
         for (let i = 0; i < devices.length; i++) {
 		entry_row[i] = document.createElement("tr");
@@ -63,15 +67,18 @@
 		input31.type = "text";
 		input31.name = "threshold".concat(devices[i]);
 		column_41 = document.createElement("td");
-		column_41.innerHTML = flows[i+1]; 
+		column_41.innerHTML = flows[i+1];
 		column_31.appendChild(input31);
-		entry_row[i].appendChild(column_11); 
+		column_51 = document.createElement("td");
+		entry_row[i].appendChild(column_11);
 		entry_row[i].appendChild(column_21);
 		entry_row[i].appendChild(column_31);
 		entry_row[i].appendChild(column_41);
+		entry_row[i].appendChild(column_51);
 		group.appendChild(entry_row[i]);
+		column_51.innerHTML ="<select id='plants' name='plants' onchange='document.getElementById('devices').submit()' ><option selected value='Default'> </option><option value='Rosemary'>Rosemary</option><option value='Basil'>Basil</option><option value='Tomato'>Tomato</option><option value='Cilantro'>Cilantro</option><option value='Parsley'>Parsley</option><option value='Pepper'>Pepper</option><option value='Mint'>Mint</option><option value='Chive'>Chive</option><option value='Lemongrass'>Lemongrass</option></select>";
 	}
-	document.getElementById("devices").appendChild(group);
+	//document.getElementById("devices").appendChild(group);
 	button = document.createElement("input");
 	button.type = "submit" ;
 	button.value = "change threshold" ;

@@ -26,11 +26,15 @@ class I2c(object):
 				time.sleep(0.5)
 			except:
 				if device in self.devices:
-					del self.devices[self.devices.index(device)]
-					self.available_adresses.append(device)
-					self.available_adresses.sort()
-					del self.threshold[str(device)]
-					del self.flow[str(device)]
+					try:
+						self.pi.i2c_write_byte(h,0x00)
+						time.sleep(0.5)
+					except:
+						del self.devices[self.devices.index(device)]
+						self.available_adresses.append(device)
+						self.available_adresses.sort()
+						del self.threshold[str(device)]
+						del self.flow[str(device)]
 				self.pi.i2c_close(h)
 				continue
 
@@ -90,6 +94,7 @@ class I2c(object):
 			self.pi.i2c_write_byte(h,0x02)
 			self.pi.i2c_close(h)
 		except:
+			self.pi.i2c_close(h)
 			self.On(device)
 		if device not in self.watering:
 			self.watering.append(device)
@@ -100,6 +105,7 @@ class I2c(object):
         	      	self.pi.i2c_write_byte(h,0x01)
 			self.pi.i2c_close(h)
 		except:
+			self.pi.i2c_close(h)
 			self.Off(device)
 		if device in self.watering:
 			del self.watering[self.watering.index(device)]
