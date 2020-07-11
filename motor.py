@@ -109,7 +109,7 @@ class Motor(object):
 				new_flow += ramp_flow
 			self.flowr += new_flow
 			#print new_flow
-			a#let s prevent calculation of another ramping if speed hasn't changed
+			#let s prevent calculation of another ramping if speed hasn't changed
 			self.previous_spd = self.speed
 			self.previous_dir = self.direction
 			self.start_water = time.time()
