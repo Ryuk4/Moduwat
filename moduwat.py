@@ -262,6 +262,7 @@ def command(cmd=None):
 		controlCursor = mydbControl.cursor()
 		if command[6:9] == '_ON':
 			if len(i2cInstance.watering) == 0:
+				print(command[5])
 				i2cInstance.On(int(command[5]))
 			elif len(i2cInstance.watering) == 1:
 				i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()

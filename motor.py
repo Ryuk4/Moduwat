@@ -13,16 +13,16 @@ class Motor(object):
 		self.flowrate = 0.448 #basic flowrate in mL/min for speed = 1000 tr/min
 		self.start_water = 0
 		self.watering = False
-		self.DIR = 23 #direction pin
-		self.STEP = 18 #step pin (the one that makes the motor turn
-		self.enable = 24 #enable is 1 to stop the drv8825 and 0 to enable it
+		self.DIR = 17 #direction pin
+		self.STEP = 27 #step pin (the one that makes the motor turn
+		self.enable = 22 #enable is 1 to stop the drv8825 and 0 to enable it
 		self.SPR = 48 #48 steps per turn of the motor
                 self.pi=pi
 		self.pi.set_mode(self.DIR, pigpio.OUTPUT)
 		self.pi.set_mode(self.STEP,pigpio.OUTPUT)
 		self.pi.set_mode(self.enable, pigpio.OUTPUT)
 		self.pi.write(self.enable, 1)
-		self.pi.write(self.DIR, 1)
+		self.pi.write(self.DIR, 0)
 		self.ramp_time = 0
 		self.previous_spd = 0
 		self.previous_dir = 0

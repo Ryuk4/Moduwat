@@ -114,7 +114,7 @@ class I2c(object):
 		h=self.pi.i2c_open(1,device)
 		try:
 			val = int(self.pi.i2c_read_byte(h))
-			val = 100-val*100/255
+			val = 100-(val-100)/1.2
 			self.pi.i2c_close(h)
 			return val
 		except Exception as e:
