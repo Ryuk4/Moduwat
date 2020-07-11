@@ -10,7 +10,7 @@ class Motor(object):
 		self.speed = 0
 		self.direction = 1
 		self.flowr = 0
-		self.flowrate = 0.448 #basic flowrate in mL/min for speed = 1000 tr/min
+		self.flowrate = 0.448 #basic flowrate in L/min for speed = 1000 tr/min
 		self.start_water = 0
 		self.watering = False
 		self.DIR = 17 #direction pin
@@ -40,6 +40,7 @@ class Motor(object):
 		diff_speed = direction*speed-self.previous_dir*self.previous_spd
 		speeds = []
 		ramp = []
+		"""10 ramp steps created"""
 		for i in range(10):
 			speeds.append(self.previous_dir*self.previous_spd+diff_speed/10*(i+1))
 			ramp.append([speeds[i],int(ramp_time/10.0*abs(speeds[i])/60*48)])
@@ -108,7 +109,7 @@ class Motor(object):
 				new_flow += ramp_flow
 			self.flowr += new_flow
 			#print new_flow
-			#let s prevent calculation of another ramping if speed hasn't changed
+			a#let s prevent calculation of another ramping if speed hasn't changed
 			self.previous_spd = self.speed
 			self.previous_dir = self.direction
 			self.start_water = time.time()
@@ -117,3 +118,12 @@ class Motor(object):
 		else : #else same flow as before
 			return new_flow
 
+	def water(self, speed, ramp_time, flow):
+		"""speed in RPM and flow in mL"""
+		self.pi.write(self.enable, 0)
+		ramp_flow = speed*self.flowrate*ramp_time  #calculates flow in mL for speed increase and decrease
+		top_spd_time = (flow - ramp_flow)/speed*1000.0/self.flowrate
+		if top_spd_time > 0:
+			self.turn(speed,1,ramp_time)
+			time.sleep(top_spd_time)
+			self.off(ramp_time)

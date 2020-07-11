@@ -130,10 +130,7 @@ def automatic(i2cCall, piCall, motorCall):
 			for device in i2cCall.devices :
 				if len(last_data) == len(i2cCall.devices) :
 					if last_data[i2cCall.devices.index(device)] < i2cCall.threshold[str(device)]:
-						motorCall.turn(500,1,2)
-						time.sleep(2)
-						motorCall.off(2)
-						print("la plante "+str(device)+" est trop seche!")
+						motorCall.water(500,2,10)
 			#print(last_data)
 			time.sleep(10)
 			pass
