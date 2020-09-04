@@ -162,11 +162,13 @@ def graph():
 @app.route("/settings", methods = ['POST','GET'])
 def settings():
     message=''
-    mydbControl = sqlite3.connect(CONTROLS_LOGIN)
-    controlCursor = mydbControl.cursor()
-    controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
-    mode = controlCursor.fetchall()[0][1]
-    mydbControl.close()
+    with sqlite3.connect(CONTROLS_LOGIN) as connection:
+        controlCursor = connection.cursor()
+    #mydbControl = sqlite3.connect(CONTROLS_LOGIN)
+    #controlCursor = mydbControl.cursor()
+        controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
+        mode = controlCursor.fetchall()[0][1]
+    #mydbControl.close()
     if mode == 0:
         mode='Manual'
     elif mode == 1:
@@ -208,19 +210,25 @@ def settings():
                 message = "New plant detected"
         #change mode to automatic
         elif 'Manual' in request.form:
-            mydbControl = sqlite3.connect(CONTROLS_LOGIN)
-            controlCursor = mydbControl.cursor()
-            controlCursor.execute(UPDATE_CONTROLS,["mode",1])
-            mydbControl.commit()
-            mydbControl.close()
+            with sqlite3.connect(CONTROLS_LOGIN) as connection:
+                controlCursor = connection.cursor()
+            #mydbControl = sqlite3.connect(CONTROLS_LOGIN)
+            #controlCursor = mydbControl.cursor()
+                controlCursor.execute(UPDATE_CONTROLS,["mode",1])
+                connection.commit()
+            #mydbControl.commit()
+            #mydbControl.close()
             mode='Automatic'
         #change mode to manual
         elif 'Automatic' in request.form:
-            mydbControl = sqlite3.connect(CONTROLS_LOGIN)
-            controlCursor = mydbControl.cursor()
-            controlCursor.execute(UPDATE_CONTROLS,["mode",0])
-            mydbControl.commit()
-            mydbControl.close()
+            with sqlite3.connect(CONTROLS_LOGIN) as connection:
+                controlCursor = connection.cursor()
+            #mydbControl = sqlite3.connect(CONTROLS_LOGIN)
+            #controlCursor = mydbControl.cursor()
+                controlCursor.execute(UPDATE_CONTROLS,["mode",0])
+                connection.commit()
+            #mydbControl.commit()
+            #mydbControl.close()
             mode='Manual'
         #change threshold
         elif 'change' in request.form:
@@ -252,34 +260,38 @@ def settings():
 def command(cmd=None):
     command=cmd.upper()
     if command[0:5] == 'WATER':
-        mydbControl = sqlite3.connect(CONTROLS_LOGIN)
-        controlCursor = mydbControl.cursor()
-        if command[6:9] == '_ON':
-            if len(i2cInstance.watering) == 0:
-                print(command[5])
-                i2cInstance.On(int(command[5]))
-            elif len(i2cInstance.watering) == 1:
-                i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
-                i2cInstance.Off(i2cInstance.watering[0])
-                i2cInstance.On(int(command[5]))
-            controlCursor.execute(UPDATE_CONTROLS,["watering",1])
-            mydbControl.commit()
-            mydbControl.close()
-            i2cInstance.flow[str(command[5])] += motor.turn(1000,1,1)
-            return 'Watering '+command[5]
-        elif command[6:10] == '_OFF':
-            i2cInstance.flow[str(command[5])] += motor.flow()
-            i2cInstance.flow[str(command[5])] += motor.off(1)
-            i2cInstance.Off(int(command[5]))
-            if len(i2cInstance.watering) == 1:
-                del i2cInstance.watering[0]
-            controlCursor.execute(UPDATE_CONTROLS,["watering",0])
-            mydbControl.commit()
-            mydbControl.close()
-            return 'Stop watering '+command[5]
-        else:
-            mydbControl.close()
-            return 'Wrong command'
+        with sqlite3.connect(CONTROLS_LOGIN) as connection:
+            controlCursor = connection.cursor()
+        #mydbControl = sqlite3.connect(CONTROLS_LOGIN)
+        #controlCursor = mydbControl.cursor()
+            if command[6:9] == '_ON':
+                if len(i2cInstance.watering) == 0:
+                    print(command[5])
+                    i2cInstance.On(int(command[5]))
+                elif len(i2cInstance.watering) == 1:
+                    i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
+                    i2cInstance.Off(i2cInstance.watering[0])
+                    i2cInstance.On(int(command[5]))
+                controlCursor.execute(UPDATE_CONTROLS,["watering",1])
+                connection.commit()
+                #mydbControl.commit()
+                #mydbControl.close()
+                i2cInstance.flow[str(command[5])] += motor.turn(1000,1,1)
+                return 'Watering '+command[5]
+            elif command[6:10] == '_OFF':
+                i2cInstance.flow[str(command[5])] += motor.flow()
+                i2cInstance.flow[str(command[5])] += motor.off(1)
+                i2cInstance.Off(int(command[5]))
+                if len(i2cInstance.watering) == 1:
+                    del i2cInstance.watering[0]
+                controlCursor.execute(UPDATE_CONTROLS,["watering",0])
+                connection.commit()
+                #mydbControl.commit()
+                #mydbControl.close()
+                return 'Stop watering '+command[5]
+            else:
+                #mydbControl.close()
+                return 'Wrong command'
     else:
         print(command)
         return 'Command not implemented yet'
@@ -289,15 +301,17 @@ def command(cmd=None):
 if __name__ == '__main__':
     try:
         i2cInstance.scan()
-        mydb = sqlite3.connect(MEASUREMENTS_LOGIN)
-        measureCursor = mydb.cursor()
-        for device in i2cInstance.devices:
-            sql1 = "DROP TABLE IF EXISTS hygrometry"+str(device)
-            measureCursor.execute(sql1)
-            #sql = "CREATE TABLE hygrometry"+str(device)+" (time INT, measure INT)"
-            sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
-            measureCursor.execute(sql)
-        mydb.close()
+        with sqlite3.connect(MEASUREMENTS_LOGIN) as connection:
+            measureCursor = connection.cursor()
+        #mydb = sqlite3.connect(MEASUREMENTS_LOGIN)
+        #measureCursor = mydb.cursor()
+            for device in i2cInstance.devices:
+                sql1 = "DROP TABLE IF EXISTS hygrometry"+str(device)
+                measureCursor.execute(sql1)
+                #sql = "CREATE TABLE hygrometry"+str(device)+" (time INT, measure INT)"
+                sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
+                measureCursor.execute(sql)
+        #mydb.close()
         thr = Thread(target = poll_data, args=(i2cInstance,pi))
         thr.daemon = True
         thr.start()
@@ -311,9 +325,12 @@ if __name__ == '__main__':
     finally:
         if len(i2cInstance.watering) >0:
             i2cInstance.Off(i2cInstance.watering[0])
-        mydb = sqlite3.connect(CONTROLS_LOGIN)
-        cursor = mydb.cursor()
-        cursor.execute(UPDATE_CONTROLS,["watering",0])
-        mydb.commit()
-        mydb.close()
+        with sqlite3.connect(CONTROLS_LOGIN) as connection:
+            cursor = connection.cursor()
+        #mydb = sqlite3.connect(CONTROLS_LOGIN)
+        #cursor = mydb.cursor()
+            cursor.execute(UPDATE_CONTROLS,["watering",0])
+            connection.commit()
+        #mydb.commit()
+        #mydb.close()
 
