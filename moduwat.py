@@ -301,17 +301,23 @@ def command(cmd=None):
 if __name__ == '__main__':
     try:
         i2cInstance.scan()
-        with sqlite3.connect(MEASUREMENTS_LOGIN) as connection:
-            measureCursor = connection.cursor()
+        if sys.argv[1] == 'y':
+            with sqlite3.connect(MEASUREMENTS_LOGIN) as connection:
+                measureCursor = connection.cursor()
         #mydb = sqlite3.connect(MEASUREMENTS_LOGIN)
         #measureCursor = mydb.cursor()
-            for device in i2cInstance.devices:
-                sql1 = "DROP TABLE IF EXISTS hygrometry"+str(device)
-                measureCursor.execute(sql1)
-                #sql = "CREATE TABLE hygrometry"+str(device)+" (time INT, measure INT)"
-                sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
-                measureCursor.execute(sql)
-        #mydb.close()
+                for device in i2cInstance.devices:
+                    sql_drop = "DROP TABLE IF EXISTS hygrometry"+str(device)
+                    measureCursor.execute(sql_drop)
+                    #sql = "CREATE TABLE hygrometry"+str(device)+" (time INT, measure INT)"
+                    sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
+                    measureCursor.execute(sql)
+            with sqlite3.connect(CONTROLS_LOGIN) as connection:
+                controlsCursor = connection.cursor()
+                sql_drop = "DROP TABLE IF EXISTS controls"
+                controlsCursor.execute(sql_drop)
+                controlsCursor.execute(CONTROLS_TABLE)
+            #mydb.close()
         thr = Thread(target = poll_data, args=(i2cInstance,pi))
         thr.daemon = True
         thr.start()
