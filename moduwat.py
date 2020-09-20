@@ -175,17 +175,18 @@ def settings():
         mode ='Automatic'
 
     if request.method == 'GET':
+        flows = []
         if len(i2cInstance.watering) == 1:
             i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
-
-            flows = []
             flows.append(motor.flowr)
-            threshold=[]
-            for device in i2cInstance.devices:
-                threshold.append(i2cInstance.threshold[str(device)])
-                flows.append(i2cInstance.flow[str(device)])
-                devices=i2cInstance.devices
-            return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date)
+
+        threshold = []
+        for device in i2cInstance.devices:
+            flows.append(i2cInstance.flow[str(device)])
+            devices=i2cInstance.devices
+            threshold.append(i2cInstance.threshold[str(device)])
+
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date)
 
 
     elif request.method == 'POST' :
@@ -317,6 +318,8 @@ if __name__ == '__main__':
                 sql_drop = "DROP TABLE IF EXISTS controls"
                 controlsCursor.execute(sql_drop)
                 controlsCursor.execute(CONTROLS_TABLE)
+		controlsCursor.execute(FILL_CONTROLS)
+		connection.commit()
             #mydb.close()
         thr = Thread(target = poll_data, args=(i2cInstance,pi))
         thr.daemon = True

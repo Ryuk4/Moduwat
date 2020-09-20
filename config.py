@@ -9,6 +9,15 @@ CREATE TABLE IF NOT EXISTS controls (
     data INT
 )
 '''
+FILL_CONTROLS = '''
+INSERT INTO controls
+	(variable,data)
+VALUES
+	("mode",0),
+	("next",0),
+	("threshold",10),
+	("watering",0);
+'''
 
 HYGROMETRY_TABLE = '''
 CREATE TABLE IF NOT EXISTS {} (
