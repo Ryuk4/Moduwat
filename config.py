@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS {} (
 '''
 
 PLANTS_CONFIG = {
-    'Basil'     : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'}, 
+    'Basil'     : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
     'Chive'     : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'mi ombre'},
     'Cilantro'  : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
     'Dill'      : {'Kc' : 0.8 ,'soil' : 0.4 , 'sun' : 'direct'},
@@ -37,7 +37,7 @@ PLANTS_CONFIG = {
     'Pepper'    : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
     'Rosemary'  : {'Kc' : 0.4 ,'soil' : 0.4 , 'sun' : 'direct'},
     'Sage'      : {'Kc' : 0.4 ,'soil' : 0.4 , 'sun' : 'direct'},
-    'Tarragon'  : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'}      
+    'Tarragon'  : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'}
 }
 
 
