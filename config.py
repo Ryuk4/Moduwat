@@ -26,6 +26,19 @@ CREATE TABLE IF NOT EXISTS {} (
 )
 '''
 
+#Rosemary besoin en eau faible, sol sec entre arrosages, soleil direct
+#Basil besoin en eau moyen, sol drainé entre arrosages, soleil direct
+#Dill (aneth) besoin en eau moyen, sol sec entre arrosages, soleil 
+#Cilantro (coriandre) besoin en eau moyen, sol drainé entre arrosage, soleil
+#Tarragon (Estragon) besoin en eau moyen, sol drainé entre arrosage, soleil
+#Parsley besoin en eau moyen, sol drainé, mi ombre
+#Chive (Ciboulette) besoin en eau moyen, sol drainé, mi ombre
+#Sage (sauge) besoin en eau faible, sol sec entre arrosages, soleil direct
+
+
+
+
+
 UPDATE_CONTROLS = '''REPLACE INTO controls(variable,data) VALUES(?,?)'''
 
 INSERT_HYGRO = '''INSERT INTO {} (time,measure) VALUES (?,?)'''

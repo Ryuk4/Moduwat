@@ -33,7 +33,7 @@ date = str(d.day)+"/"+str(d.month)+"/"+str(d.year)+" at "+str(d.hour)+":"+str(d.
 def poll_data(i2cCall,piCall):
     next=time.time()
     changed = False
-    update = True
+    reading = True
     delay = time.time()
     while True:
         now=time.time()
@@ -41,35 +41,36 @@ def poll_data(i2cCall,piCall):
             controlCursor = connection.cursor()
             controlCursor.execute("SELECT variable,data from controls where variable = 'watering'")
             watering = controlCursor.fetchall()[0][1]
-            if watering==1:
+            if watering == 1:
                 if not changed:
-                    update = True
-                if update :
-                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+2])
+                    reading = True
+                if reading :
+                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+1.9])
                     connection.commit()
                     changed = True
-                    update = False
+                    reading = False
             elif watering == 0:
                 if changed:
                     delay = time.time()+60
                     changed = False
-                    update = True
-                if now > delay :
-                    if update:
-                        controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+599])
-                        connection.commit()
-                        update = False
-                elif now < delay :
-                    if update:
-                        controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+2])
-                        connection.commit()
-                        update = False
+                    reading = True
+
+            if now > delay :
+                if reading:
+                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+599.9])
+                    connection.commit()
+                    reading = False
+            elif now < delay :
+                if reading:
+                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+2])
+                    connection.commit()
+                    reading = False
 
             controlCursor.execute("SELECT variable,data from controls where variable = 'next'")
             next = controlCursor.fetchall()[0][1]
 
         if now > next :
-            update = True
+            reading = True
             for device in i2cCall.devices: #we cover all the detected attinys
                 read = i2cCall.read_sensor(device) #we read the sensor
                 nowread = time.time() #we read the time when the measurement was done
@@ -102,7 +103,7 @@ def automatic(i2cCall, piCall, motorCall):
 
             if mode == 1:
                 controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
-                i2cCall.threshold = controlCursor.fetchall()[0][1]
+                #i2cCall.threshold = controlCursor.fetchall()[0][1]
                 
                 with sqlite3.connect(MEASUREMENTS_LOGIN) as connection2:
                     cursor = connection2.cursor()
@@ -115,8 +116,16 @@ def automatic(i2cCall, piCall, motorCall):
                 for device in i2cCall.devices :
                     if len(last_data) == len(i2cCall.devices) :
                         if last_data[i2cCall.devices.index(device)] < i2cCall.threshold[str(device)]:
+                            with sqlite3.connect(CONTROLS_LOGIN) as connection:
+                                controlCursor = connection.cursor()
+                                controlCursor.execute(UPDATE_CONTROLS,["watering",1])
+                                connection.commit()
                             motorCall.water(500,2,10)
-                time.sleep(10)
+                            time.sleep(10)
+                            with sqlite3.connect(CONTROLS_LOGIN) as connection:
+                                controlCursor = connection.cursor()
+                                controlCursor.execute(UPDATE_CONTROLS,["watering",0])
+                                connection.commit()
                 pass
 
             else:
@@ -216,6 +225,7 @@ def settings():
         i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()        
         flows.append(motor.flowr)
     threshold=[]
+    
     for device in i2cInstance.devices:
         flows.append(i2cInstance.flow[str(device)])
         threshold.append(i2cInstance.threshold[str(device)])
