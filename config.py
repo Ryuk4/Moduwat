@@ -26,16 +26,35 @@ CREATE TABLE IF NOT EXISTS {} (
 )
 '''
 
-#Rosemary besoin en eau faible, sol sec entre arrosages, soleil direct
-#Basil besoin en eau moyen, sol drainé entre arrosages, soleil direct
-#Dill (aneth) besoin en eau moyen, sol sec entre arrosages, soleil 
-#Cilantro (coriandre) besoin en eau moyen, sol drainé entre arrosage, soleil
-#Tarragon (Estragon) besoin en eau moyen, sol drainé entre arrosage, soleil
-#Parsley besoin en eau moyen, sol drainé, mi ombre
-#Chive (Ciboulette) besoin en eau moyen, sol drainé, mi ombre
-#Sage (sauge) besoin en eau faible, sol sec entre arrosages, soleil direct
+PLANTS_CONFIG = {
+    'Basil'     : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'}, 
+    'Chive'     : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'mi ombre'},
+    'Cilantro'  : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
+    'Dill'      : {'Kc' : 0.8 ,'soil' : 0.4 , 'sun' : 'direct'},
+    'Lemongrass': {'Kc' : 1.2 ,'soil' : 0.6 , 'sun' : 'direct'},
+    'Mint'      : {'Kc' : 0.8 ,'soil' : 0.8 , 'sun' : 'mi ombre'},
+    'Parsley'   : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'mi ombre'},
+    'Pepper'    : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
+    'Rosemary'  : {'Kc' : 0.4 ,'soil' : 0.4 , 'sun' : 'direct'},
+    'Sage'      : {'Kc' : 0.4 ,'soil' : 0.4 , 'sun' : 'direct'},
+    'Tarragon'  : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'}      
+}
 
 
+ETP_CONFIG = {
+    'January'  : 1,
+    'February' : 2,
+    'March'    : 3,
+    'April'    : 4,
+    'May'      : 5,
+    'June'     : 6,
+    'July'     : 7,
+    'August'   : 6,
+    'September': 5,
+    'October'  : 4,
+    'November' : 3,
+    'December' : 2
+}
 
 
 
