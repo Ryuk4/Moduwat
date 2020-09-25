@@ -8,7 +8,7 @@ import pigpio
 from i2c import I2c
 from motor import Motor
 import time
-from threading import Thread, Lock
+from threading import Thread
 import codecs
 from collections import deque
 import pymysql
@@ -24,6 +24,7 @@ motor = Motor(pi)
 
 #profiles = {'Rosemary': {'dry_value':10,'dry_time':3000,KETPmoy: ,KETPmax: }}
 
+plant_list = list (PLANTS_CONFIG)
 
 app= Flask(__name__)
 
@@ -159,6 +160,10 @@ def settings():
         mode='Manual'
     elif mode == 1:
         mode ='Automatic'
+        
+    preselected_id = []
+    for plant in i2cInstance.plant_type:
+            preselected_id.append(plant_list.index(plant))
 
     if request.method == 'GET':
         flows = []
@@ -167,15 +172,25 @@ def settings():
             flows.append(motor.flowr)
 
         threshold = []
+        
         for device in i2cInstance.devices:
-            flows.append(i2cInstance.flow[str(device)])
-            devices=i2cInstance.devices
+            flows.append(i2cInstance.flow[str(device)])            
             threshold.append(i2cInstance.threshold[str(device)])
-
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date)
+            
+        
+        devices=i2cInstance.devices
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=preselected_id)
 
 
     elif request.method == 'POST' :
+        #change plant type
+        for device in devices:
+            id_select="select"+str(device)
+            if id_select in request.form:
+                select = request.form.get(id_select)
+                selected = id_select[-1]
+                preselected_id[int(selected)-1] = plant_list.index(select)
+                
         if 'ad_change' in request.form:
             f_adress = int(request.form["faddress"])
             n_adress = int(request.form["naddress"])
@@ -216,6 +231,9 @@ def settings():
                 if len(request.form.get("threshold"+str(device))) > 0:
                     i2cInstance.threshold[str(device)] = int(request.form.get("threshold"+str(device)))
                     threshold.append(i2cInstance.threshold[str(device)])
+        #change plant
+        #elif 'plant_select' in request.form:
+            #selected_plant = request.form.get('plant_select')
         #request not implemented yet
         else:
             message = "Not implemented"
@@ -231,7 +249,7 @@ def settings():
         threshold.append(i2cInstance.threshold[str(device)])
 
     devices = i2cInstance.devices
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date)
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list, preselected_plant=preselected_id)
 
 
 

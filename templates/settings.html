@@ -31,8 +31,11 @@
    </body>
 </html>
 
+
+
 <script>
 	var devices = {{ devices }} ;
+	var preselected = {{ preselected_plant }} 
 	var threshold = {{ threshold }} ;
 	var flows = {{ flows }} ;
 	var entry_row = [];
@@ -43,20 +46,20 @@
 	column_2 = document.createElement("th");
 	column_2.innerHTML = "Current threshold";
 	column_3 = document.createElement("th");
-        column_3.innerHTML = "New threshold";
+    column_3.innerHTML = "New threshold";
 	column_4 = document.createElement("th");
 	column_4.innerHTML = "Flow";
-        column_5 = document.createElement("th");
-        column_5.innerHTML = "Plant profile";
-        row_1.appendChild(column_1);
-        row_1.appendChild(column_2);
-        row_1.appendChild(column_3);
+    column_5 = document.createElement("th");
+    column_5.innerHTML = "Plant profile";
+    row_1.appendChild(column_1);
+    row_1.appendChild(column_2);
+    row_1.appendChild(column_3);
 	row_1.appendChild(column_4);
 	row_1.appendChild(column_5);
-        group.appendChild(row_1);
+    group.appendChild(row_1);
 	document.getElementById("devices").appendChild(group);
 
-        for (let i = 0; i < devices.length; i++) {
+    for (let i = 0; i < devices.length; i++) {
 		entry_row[i] = document.createElement("tr");
 		column_11 = document.createElement("td");
 		column_11.innerHTML = "Device ".concat(devices[i]);
@@ -76,15 +79,55 @@
 		entry_row[i].appendChild(column_41);
 		entry_row[i].appendChild(column_51);
 		group.appendChild(entry_row[i]);
-		column_51.innerHTML ="<select id='plants' name='plants' onchange='document.getElementById('devices').submit()' ><option selected value='Default'> </option><option value='Rosemary'>Rosemary</option><option value='Basil'>Basil</option><option value='Tomato'>Tomato</option><option value='Cilantro'>Cilantro</option><option value='Parsley'>Parsley</option><option value='Pepper'>Pepper</option><option value='Mint'>Mint</option><option value='Chive'>Chive</option><option value='Lemongrass'>Lemongrass</option></select>";
+		var id_plant = "device"+devices[i];
+		var id_select = "select"+devices[i];
+		form_plant = document.createElement("form");
+		form_plant.name = id_plant;
+		form_plant.id = id_plant;
+		
+		
+		form_plant.method = "post";
+		column_51.appendChild(form_plant);
+		form_plant.innerHTML = `
+    		<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
+        		{% for plant in data %} 
+                    <option value='{{ plant }}'>
+                        {{ plant }} 
+                    </option> 
+                {% endfor %}
+            </select>
+        `;
+        document.getElementById(id_select).selectedIndex = preselected[i]
+        
+        
+        //column_51.innerHTML =`
+        //    <form name='plant' id ='plant' method='post'>
+        //        <select name='plant_select' id='selection' onchange='submitform();'> 
+        //            {% for plant in data %} 
+        //                <option value='{{ plant }}'>
+        //                    {{ plant }} 
+        //                </option> 
+        //            {% endfor %} 
+        //        </select> 
+        //    </form>`;
+        //document.getElementById("selection").selectedIndex = {{ preselected_plant }} 
 	}
-	//document.getElementById("devices").appendChild(group);
-	button = document.createElement("input");
-	button.type = "submit" ;
-	button.value = "change threshold" ;
-	button.name =  "change" ;
-	document.getElementById("devices").appendChild(button);
+	document.getElementById("devices").appendChild(group);
+	//button = document.createElement("input");
+	//button.type = "submit" ;
+	//button.value = "change threshold" ;
+	//button.name =  "change" ;
+	//document.getElementById("devices").appendChild(button);
 </script>
+
+
+<script type="text/javascript">
+//function submitform()
+//{
+//  document.plant.submit();
+//}
+</script>
+
 
 <script>
 // Only run what comes next *after* the page has loaded
