@@ -24,7 +24,6 @@ motor = Motor(pi)
 
 #profiles = {'Rosemary': {'dry_value':10,'dry_time':3000,KETPmoy: ,KETPmax: }}
 
-plant_list = list (PLANTS_CONFIG)
 
 app= Flask(__name__)
 
@@ -63,12 +62,15 @@ def poll_data(i2cCall,piCall):
                     reading = False
             elif now < delay :
                 if reading:
-                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+2])
+                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+1.9])
                     connection.commit()
                     reading = False
 
+        with sqlite3.connect(CONTROLS_LOGIN) as connection:
+            controlCursor = connection.cursor()
             controlCursor.execute("SELECT variable,data from controls where variable = 'next'")
             next = controlCursor.fetchall()[0][1]
+            #print next
 
         if now > next :
             reading = True
@@ -76,6 +78,7 @@ def poll_data(i2cCall,piCall):
                 read = i2cCall.read_sensor(device) #we read the sensor
                 nowread = time.time() #we read the time when the measurement was done
                 sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (?,?)"
+                #print read
                 if read is not None:
                     val = (nowread,read)
                     values.append(val)
@@ -139,7 +142,8 @@ def data(device):
         showCursor = connection.cursor()
         showCursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
         results = showCursor.fetchall()
-        return json.dumps(results)
+    print results
+    return json.dumps(results)
 
 @app.route("/graph")
 def graph():
@@ -160,11 +164,16 @@ def settings():
         mode='Manual'
     elif mode == 1:
         mode ='Automatic'
-        
+    plant_list = sorted(PLANTS_CONFIG)
+    print plant_list
     preselected_id = []
-    for plant in i2cInstance.plant_type:
-            preselected_id.append(plant_list.index(plant))
+    for device in i2cInstance.devices:
+        if i2cInstance.plant_type[str(device)] != "Select":
+            preselected_id.append(plant_list.index(i2cInstance.plant_type[str(device)]))
+        else:
+            preselected_id.append(None)
 
+    print preselected_id
     if request.method == 'GET':
         flows = []
         if len(i2cInstance.watering) == 1:
@@ -174,23 +183,26 @@ def settings():
         threshold = []
         
         for device in i2cInstance.devices:
-            flows.append(i2cInstance.flow[str(device)])            
+            flows.append(i2cInstance.flow[str(device)])
             threshold.append(i2cInstance.threshold[str(device)])
-            
-        
+
         devices=i2cInstance.devices
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=preselected_id)
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
 
 
     elif request.method == 'POST' :
         #change plant type
-        for device in devices:
+        
+        for device in i2cInstance.devices:
             id_select="select"+str(device)
             if id_select in request.form:
                 select = request.form.get(id_select)
                 selected = id_select[-1]
-                preselected_id[int(selected)-1] = plant_list.index(select)
-                
+                print selected
+                print select
+                print preselected_id
+                preselected_id[0] = plant_list.index(select)
+                i2cInstance.plant_type[str(device)] = select
         if 'ad_change' in request.form:
             f_adress = int(request.form["faddress"])
             n_adress = int(request.form["naddress"])
@@ -235,12 +247,12 @@ def settings():
         #elif 'plant_select' in request.form:
             #selected_plant = request.form.get('plant_select')
         #request not implemented yet
-        else:
-            message = "Not implemented"
-            print("not implemented")
+        #else:
+        #    message = "Not implemented"
+        #    print("not implemented")
     flows = []
     if len(i2cInstance.watering) == 1:
-        i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()        
+        i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
         flows.append(motor.flowr)
     threshold=[]
     
@@ -249,7 +261,7 @@ def settings():
         threshold.append(i2cInstance.threshold[str(device)])
 
     devices = i2cInstance.devices
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list, preselected_plant=preselected_id)
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
 
 
 

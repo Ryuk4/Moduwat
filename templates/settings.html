@@ -88,17 +88,34 @@
 		
 		form_plant.method = "post";
 		column_51.appendChild(form_plant);
-		form_plant.innerHTML = `
-    		<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
-        		{% for plant in data %} 
-                    <option value='{{ plant }}'>
-                        {{ plant }} 
-                    </option> 
-                {% endfor %}
-            </select>
-        `;
-        document.getElementById(id_select).selectedIndex = preselected[i]
-        
+                if(preselected[i] ==  null){
+		    form_plant.innerHTML = `
+    		        <select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
+                            <option value='Select'>
+                                Select
+                            </option>
+        	            {% for plant in plants %} 
+                                <option value='{{ plant }}'>
+                                    {{ plant }} 
+                                </option> 
+                            {% endfor %}
+                        </select>
+                    `;
+                }
+                else{
+                    form_plant.innerHTML = `
+                        <select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
+                            {% for plant in plants %}
+                                <option value='{{ plant }}'>
+                                    {{ plant }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    `;
+                }
+        if(preselected[i] !=  null){
+            document.getElementById(id_select).selectedIndex = preselected[i]
+        }
         
         //column_51.innerHTML =`
         //    <form name='plant' id ='plant' method='post'>

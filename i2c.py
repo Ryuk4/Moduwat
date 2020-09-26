@@ -15,7 +15,7 @@ class I2c(object):
         self.flow = {}
         self.pi=pi
         self.dry_list = []
-        self.plant_type = []
+        self.plant_type = {}
     def scan(self):
         for device in range(3,70):
             #print(str(device)+' '+str(time.time()))
@@ -47,6 +47,7 @@ class I2c(object):
             else:
                 self.devices.append(device)
                 self.threshold[str(device)] = 10
+                self.plant_type[str(device)] = "Select"
                 self.flow[str(device)] = 0
                 self.devices.sort()
                 del self.available_adresses[self.available_adresses.index(device)]
