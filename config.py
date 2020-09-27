@@ -41,20 +41,20 @@ PLANTS_CONFIG = {
 }
 
 
-ETP_CONFIG = {
-    'January'  : 1,
-    'February' : 2,
-    'March'    : 3,
-    'April'    : 4,
-    'May'      : 5,
-    'June'     : 6,
-    'July'     : 7,
-    'August'   : 6,
-    'September': 5,
-    'October'  : 4,
-    'November' : 3,
-    'December' : 2
-}
+ETP_CONFIG = [
+    1, #january
+    2, #February
+    3, #March
+    4, #April
+    5, #May
+    6, #June
+    7, #July
+    6, #August
+    5, #September
+    4, #October
+    3, #November
+    2  #December
+]
 
 
 

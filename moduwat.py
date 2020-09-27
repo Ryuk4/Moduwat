@@ -17,7 +17,7 @@ import sys
 import sqlite3
 import datetime
 from flask_cors import cross_origin
-
+import pytz
 values = deque(maxlen=1000)
 
 pi=pigpio.pi()
@@ -29,7 +29,7 @@ motor = Motor(pi)
 
 app= Flask(__name__)
 
-d = datetime.datetime.now()
+d = pytz.utc.localize(datetime.datetime.now())
 date = str(d.day)+"/"+str(d.month)+"/"+str(d.year)+" at "+str(d.hour)+":"+str(d.minute)+":"+str(d.second)
 
 def poll_data(i2cCall,piCall):
@@ -107,35 +107,36 @@ def automatic(i2cCall, piCall, motorCall):
             controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
             mode = controlCursor.fetchall()[0][1]
 
-            if mode == 1:
-                controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
-                #i2cCall.threshold = controlCursor.fetchall()[0][1]
-                
-                with sqlite3.connect(MEASUREMENTS_LOGIN) as connection2:
-                    cursor = connection2.cursor()
-                    last_data = []
-                    for device in i2cCall.devices :
-                        cursor.execute("SELECT * FROM hygrometry"+str(device)+" ORDER BY time DESC LIMIT 1")
-                        data = cursor.fetchall()
-                        if len(data) != 0:
-                            last_data.append(data[0][1])
+        if mode == 1:
+            controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
+            #i2cCall.threshold = controlCursor.fetchall()[0][1]
+
+            with sqlite3.connect(MEASUREMENTS_LOGIN) as connection2:
+                cursor = connection2.cursor()
+                last_data = []
                 for device in i2cCall.devices :
-                    if len(last_data) == len(i2cCall.devices) :
-                        if last_data[i2cCall.devices.index(device)] < i2cCall.threshold[str(device)]:
-                            with sqlite3.connect(CONTROLS_LOGIN) as connection:
-                                controlCursor = connection.cursor()
-                                controlCursor.execute(UPDATE_CONTROLS,["watering",1])
-                                connection.commit()
-                            motorCall.water(500,2,10)
+                    cursor.execute("SELECT * FROM hygrometry"+str(device)+" ORDER BY time DESC LIMIT 1")
+                    data = cursor.fetchall()
+                    if len(data) != 0:
+                        last_data.append(data[0][1])
+            for device in i2cCall.devices :
+                if len(last_data) == len(i2cCall.devices) :
+                    if last_data[i2cCall.devices.index(device)] < i2cCall.threshold[str(device)]:
+                        with sqlite3.connect(CONTROLS_LOGIN) as connection:
+                            controlCursor = connection.cursor()
+                            controlCursor.execute(UPDATE_CONTROLS,["watering",1])
+                            connection.commit()
+                        if pytz.utc.localize(datetime.datetime.now()).hour >10 and pytz.utc.localize(datetime.datetime.now()).hour <21:
+
+                            motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1]*5)
                             time.sleep(10)
                             with sqlite3.connect(CONTROLS_LOGIN) as connection:
                                 controlCursor = connection.cursor()
                                 controlCursor.execute(UPDATE_CONTROLS,["watering",0])
                                 connection.commit()
-                pass
-
-            else:
-                time.sleep(1)
+            pass
+        else:
+            time.sleep(3600)
 
 
 @app.route("/<int:device>/data.json")
