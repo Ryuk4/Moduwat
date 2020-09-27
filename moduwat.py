@@ -16,6 +16,8 @@ import pymysql.cursors
 import sys
 import sqlite3
 import datetime
+from flask_cors import cross_origin
+
 values = deque(maxlen=1000)
 
 pi=pigpio.pi()
@@ -137,6 +139,7 @@ def automatic(i2cCall, piCall, motorCall):
 
 
 @app.route("/<int:device>/data.json")
+@cross_origin()
 def data(device):
     with sqlite3.connect(MEASUREMENTS_LOGIN) as connection:
         showCursor = connection.cursor()
@@ -165,7 +168,7 @@ def settings():
     elif mode == 1:
         mode ='Automatic'
     plant_list = sorted(PLANTS_CONFIG)
-    print plant_list
+    #print plant_list
     preselected_id = []
     for device in i2cInstance.devices:
         if i2cInstance.plant_type[str(device)] != "Select":
@@ -173,7 +176,7 @@ def settings():
         else:
             preselected_id.append(None)
 
-    print preselected_id
+    #print preselected_id
     if request.method == 'GET':
         flows = []
         if len(i2cInstance.watering) == 1:
@@ -181,7 +184,7 @@ def settings():
             flows.append(motor.flowr)
 
         threshold = []
-        
+
         for device in i2cInstance.devices:
             flows.append(i2cInstance.flow[str(device)])
             threshold.append(i2cInstance.threshold[str(device)])
@@ -191,23 +194,24 @@ def settings():
 
 
     elif request.method == 'POST' :
+
         #change plant type
-        
         for device in i2cInstance.devices:
             id_select="select"+str(device)
             if id_select in request.form:
                 select = request.form.get(id_select)
                 selected = id_select[-1]
-                print selected
-                print select
-                print preselected_id
                 preselected_id[0] = plant_list.index(select)
                 i2cInstance.plant_type[str(device)] = select
+                i2cInstance.threshold[str(device)] = 100*PLANTS_CONFIG[select]['soil']
+
+        #change adress of device
         if 'ad_change' in request.form:
             f_adress = int(request.form["faddress"])
             n_adress = int(request.form["naddress"])
             i2cInstance.change_adress(f_adress,n_adress)
             message = "Changed adress "+ str(f_adress) +" to "+str(n_adress)
+
         #scan i2c addresses
         elif 'scan' in request.form:
             devicesBef=[]
@@ -222,6 +226,7 @@ def settings():
             if devicesBef != devices:
                 #return render_template("select_profile.html")
                 message = "New plant detected"
+
         #change mode to automatic
         elif 'Manual' in request.form:
             with sqlite3.connect(CONTROLS_LOGIN) as connection:
@@ -229,6 +234,7 @@ def settings():
                 controlCursor.execute(UPDATE_CONTROLS,["mode",1])
                 connection.commit()
             mode='Automatic'
+
         #change mode to manual
         elif 'Automatic' in request.form:
             with sqlite3.connect(CONTROLS_LOGIN) as connection:
@@ -236,6 +242,7 @@ def settings():
                 controlCursor.execute(UPDATE_CONTROLS,["mode",0])
                 connection.commit()
             mode='Manual'
+
         #change threshold
         elif 'change' in request.form:
             threshold = []
@@ -243,9 +250,7 @@ def settings():
                 if len(request.form.get("threshold"+str(device))) > 0:
                     i2cInstance.threshold[str(device)] = int(request.form.get("threshold"+str(device)))
                     threshold.append(i2cInstance.threshold[str(device)])
-        #change plant
-        #elif 'plant_select' in request.form:
-            #selected_plant = request.form.get('plant_select')
+
         #request not implemented yet
         #else:
         #    message = "Not implemented"
