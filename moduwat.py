@@ -18,6 +18,7 @@ import sqlite3
 import datetime
 from flask_cors import cross_origin
 import pytz
+from gevent.pywsgi import WSGIServer 
 values = deque(maxlen=1000)
 
 pi=pigpio.pi()
@@ -28,6 +29,7 @@ motor = Motor(pi)
 
 
 app= Flask(__name__)
+http_server = WSGIServer(('', 9090), app) 
 
 d = pytz.utc.localize(datetime.datetime.now())
 date = str(d.day)+"/"+str(d.month)+"/"+str(d.year)+" at "+str(d.hour)+":"+str(d.minute)+":"+str(d.second)
@@ -128,15 +130,15 @@ def automatic(i2cCall, piCall, motorCall):
                             connection.commit()
                         if pytz.utc.localize(datetime.datetime.now()).hour >10 and pytz.utc.localize(datetime.datetime.now()).hour <21:
 
-                            motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1]*5)
+                            motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1]*20)
                             time.sleep(10)
                             with sqlite3.connect(CONTROLS_LOGIN) as connection:
                                 controlCursor = connection.cursor()
                                 controlCursor.execute(UPDATE_CONTROLS,["watering",0])
                                 connection.commit()
-            pass
+            time.sleep(1190)
         else:
-            time.sleep(3600)
+            time.sleep(1200)
 
 
 @app.route("/<int:device>/data.json")
@@ -146,7 +148,7 @@ def data(device):
         showCursor = connection.cursor()
         showCursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
         results = showCursor.fetchall()
-    print results
+    #print results
     return json.dumps(results)
 
 @app.route("/graph")
@@ -311,6 +313,8 @@ def command(cmd=None):
 if __name__ == '__main__':
     try:
         i2cInstance.scan()
+        for device in i2cInstance.devices:
+            i2cInstance.Off(device)
         if sys.argv[1] == 'y':
             with sqlite3.connect(MEASUREMENTS_LOGIN) as connection:
                 measureCursor = connection.cursor()
@@ -332,7 +336,8 @@ if __name__ == '__main__':
         thr2 = Thread(target = automatic, args=(i2cInstance,pi,motor))
         thr2.daemon = True
         thr2.start()
-        app.run(**FLASK_CONFIG)
+        http_server.serve_forever() 
+        #app.run(**FLASK_CONFIG)
 
     except(KeyboardInterrupt):
         raise

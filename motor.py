@@ -120,10 +120,10 @@ class Motor(object):
 
 	def water(self, speed, ramp_time, flow):
 		"""speed in RPM and flow in mL"""
-		self.pi.write(self.enable, 0)
+		#self.pi.write(self.enable, 0)
 		ramp_flow = speed*self.flowrate*ramp_time  #calculates flow in mL for speed increase and decrease
 		top_spd_time = (flow - ramp_flow)/speed*1000.0/self.flowrate
+                self.turn(speed,1,ramp_time)
 		if top_spd_time > 0:
-			self.turn(speed,1,ramp_time)
 			time.sleep(top_spd_time)
-			self.off(ramp_time)
+		self.off(ramp_time)
