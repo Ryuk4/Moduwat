@@ -128,8 +128,7 @@ def automatic(i2cCall, piCall, motorCall):
                             controlCursor = connection.cursor()
                             controlCursor.execute(UPDATE_CONTROLS,["watering",1])
                             connection.commit()
-                        if pytz.utc.localize(datetime.datetime.now()).hour >10 and pytz.utc.localize(datetime.datetime.now()).hour <21:
-
+                        if (pytz.utc.localize(datetime.datetime.now()).hour >10 and pytz.utc.localize(datetime.datetime.now()).hour <12 ) or ( pytz.utc.localize(datetime.datetime.now()).hour >18 and pytz.utc.localize(datetime.datetime.now()).hour <21 ) :
                             motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1]*20)
                             time.sleep(10)
                             with sqlite3.connect(CONTROLS_LOGIN) as connection:
