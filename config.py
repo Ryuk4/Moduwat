@@ -65,6 +65,6 @@ INSERT_HYGRO = '''INSERT INTO {} (time,measure) VALUES (?,?)'''
 FLASK_CONFIG = {
     'host'      : '0.0.0.0', # allows connection outside of localhost
     'port'      : 9090,
-    'debug'     : False ,
+    'debug'     : True ,
     'threaded'  : True,
 }

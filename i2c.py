@@ -113,13 +113,21 @@ class I2c(object):
     def read_sensor(self, device):
         h=self.pi.i2c_open(1,device)
         try:
-            val = int(self.pi.i2c_read_byte(h))
-            val = 100-(val-100)/1.2
+            val = float(self.pi.i2c_read_byte(h))
+            print "sensor value "+ str(val)
+            val = val/255.0*3.3
+            #print val
+            #val = (((1.0/val)*2.48)-0.72)*100.0
+            #print val
+            val = 564.3/(val+2.97)-90
+            val = int(val)
+            #val = 100-(val-100)/1.2
+            print "humidity "+str(val)+"%"
             self.pi.i2c_close(h)
             return val
         except Exception as e:
             self.pi.i2c_close(h)
-            #print e
+            print e
 
     def to_unix_timestamp(self,ts):
         """Get the unix timestamp (seconds from Unix epoch) 
