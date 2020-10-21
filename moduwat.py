@@ -37,7 +37,7 @@ http_server = WSGIServer(('', 9090), app)
 d = pytz.utc.localize(datetime.datetime.now())
 date = str(d.day)+"/"+str(d.month)+"/"+str(d.year)+" at "+str(d.hour)+":"+str(d.minute)+":"+str(d.second)
 
-def poll_data(i2cCall,piCall):
+def poll_data(i2cCall):
     next=time.time()
     changed = False
     reading = True
@@ -106,7 +106,7 @@ def poll_data(i2cCall,piCall):
                 time.sleep(0.1)
         time.sleep(0.1)
 
-def automatic(i2cCall, piCall, motorCall):
+def automatic(i2cCall, motorCall):
     while True :
         with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
             controlCursor = connection.cursor()
@@ -338,10 +338,10 @@ if __name__ == '__main__':
                     connection.commit()
 	except:
             pass
-        thr = Thread(target = poll_data, args=(i2cInstance,pi))
+        thr = Thread(target = poll_data, args=(i2cInstance))
         thr.daemon = True
         thr.start()
-        thr2 = Thread(target = automatic, args=(i2cInstance,pi,motor))
+        thr2 = Thread(target = automatic, args=(i2cInstance,motor))
         thr2.daemon = True
         thr2.start()
         http_server.serve_forever() 

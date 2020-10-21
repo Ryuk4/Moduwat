@@ -13,9 +13,10 @@ class I2c(object):
         self.dataList = []
         self.threshold = {}
         self.flow = {}
-        self.pi=pi
+        self.pi = pi
         self.dry_list = []
         self.plant_type = {}
+        self.mode = {}
     def scan(self):
         for device in range(3,70):
             #print(str(device)+' '+str(time.time()))
@@ -34,6 +35,7 @@ class I2c(object):
                         self.available_adresses.sort()
                         del self.threshold[str(device)]
                         del self.flow[str(device)]
+                        del self.mode[str(device)]
                 self.pi.i2c_close(h)
                 continue
 
@@ -48,6 +50,7 @@ class I2c(object):
                 self.devices.append(device)
                 self.threshold[str(device)] = 10
                 self.plant_type[str(device)] = "Select"
+                self.mode[str(device)] = "Manual"
                 self.flow[str(device)] = 0
                 self.devices.sort()
                 del self.available_adresses[self.available_adresses.index(device)]
@@ -75,7 +78,10 @@ class I2c(object):
             del self.watering[self.watering.index(old_adr)]
             self.watering.append(new_adr)
         self.devices.append(new_adr)
-        self.threshold[str(new_adr)] = 10
+        self.threshold[str(new_adr)] = self.threshold[str(old_adr)]
+        self.mode[str(new_adr)]= "Manual"
+        del self.threshold[str(old_adr)]
+        del self.mode[str(old-adr)]
         self.devices.sort()
 
     def write(self, device, pwm) :

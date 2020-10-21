@@ -46,7 +46,7 @@
 	column_2 = document.createElement("th");
 	column_2.innerHTML = "Current threshold";
 	column_3 = document.createElement("th");
-    column_3.innerHTML = "New threshold";
+    column_3.innerHTML = "Mode";
 	column_4 = document.createElement("th");
 	column_4.innerHTML = "Flow";
     column_5 = document.createElement("th");
@@ -70,7 +70,7 @@
 		input31.type = "text";
 		input31.name = "threshold".concat(devices[i]);
 		column_41 = document.createElement("td");
-		column_41.innerHTML = flows[i+1];
+		column_41.innerHTML = flows[i];
 		column_31.appendChild(input31);
 		column_51 = document.createElement("td");
 		entry_row[i].appendChild(column_11);
