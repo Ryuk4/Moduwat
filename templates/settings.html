@@ -22,12 +22,8 @@
       
       <form action= "" id= "devices" method= "post">
 
-      </form> 
-      <form action="" method= "post">
-	<p><input type= "submit" name= {{ mode }} value= {{ mode }} /></p>
-      </form>
-	
-	<a href="graph">Humidity plots</a>
+      </form>	
+      <a href="graph">Humidity plots</a>
    </body>
 </html>
 
@@ -35,9 +31,10 @@
 
 <script>
 	var devices = {{ devices }} ;
-	var preselected = {{ preselected_plant }} 
+	var preselected = {{ preselected_plant }} ; 
 	var threshold = {{ threshold }} ;
 	var flows = {{ flows }} ;
+        var mode = {{ mode }} ;
 	var entry_row = [];
 	group = document.createElement("table");
 	row_1 = document.createElement("tr");
@@ -46,20 +43,20 @@
 	column_2 = document.createElement("th");
 	column_2.innerHTML = "Current threshold";
 	column_3 = document.createElement("th");
-    column_3.innerHTML = "Mode";
+	column_3.innerHTML = "Mode";
 	column_4 = document.createElement("th");
 	column_4.innerHTML = "Flow";
-    column_5 = document.createElement("th");
-    column_5.innerHTML = "Plant profile";
-    row_1.appendChild(column_1);
-    row_1.appendChild(column_2);
-    row_1.appendChild(column_3);
+	column_5 = document.createElement("th");
+	column_5.innerHTML = "Plant profile";
+	row_1.appendChild(column_1);
+	row_1.appendChild(column_2);
+	row_1.appendChild(column_3);
 	row_1.appendChild(column_4);
 	row_1.appendChild(column_5);
-    group.appendChild(row_1);
+	group.appendChild(row_1);
 	document.getElementById("devices").appendChild(group);
 
-    for (let i = 0; i < devices.length; i++) {
+	for (let i = 0; i < devices.length; i++) {
 		entry_row[i] = document.createElement("tr");
 		column_11 = document.createElement("td");
 		column_11.innerHTML = "Device ".concat(devices[i]);
@@ -67,10 +64,16 @@
                 column_21.innerHTML = threshold[i];
 		column_31 = document.createElement("td");
 		input31 = document.createElement("input");
-		input31.type = "text";
-		input31.name = "threshold".concat(devices[i]);
+		input31.type = "submit";
+		input31.name = "mode".concat(devices[i]);
+		if(mode[i] == 1){
+			input31.value = "Automatic";
+		}
+		else{
+			input31.value = "Manual";
+		}
 		column_41 = document.createElement("td");
-		column_41.innerHTML = flows[i];
+		column_41.innerHTML = flows[i+1];
 		column_31.appendChild(input31);
 		column_51 = document.createElement("td");
 		entry_row[i].appendChild(column_11);
@@ -88,20 +91,20 @@
 		
 		form_plant.method = "post";
 		column_51.appendChild(form_plant);
-                if(preselected[i] ==  null){
-		    form_plant.innerHTML = `
-    		        <select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
-                            <option value='Select'>
-                                Select
-                            </option>
-        	            {% for plant in plants %} 
-                                <option value='{{ plant }}'>
-                                    {{ plant }} 
-                                </option> 
-                            {% endfor %}
-                        </select>
-                    `;
-                }
+		if(preselected[i] ==  null){
+			form_plant.innerHTML = `
+    				<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
+                        		<option value='Select'>
+						Select
+					</option>
+					{% for plant in plants %} 
+						<option value='{{ plant }}'>
+							{{ plant }} 
+						</option> 
+					{% endfor %}
+				</select>
+			`;
+		}
                 else{
                     form_plant.innerHTML = `
                         <select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
@@ -117,24 +120,9 @@
             document.getElementById(id_select).selectedIndex = preselected[i]
         }
         
-        //column_51.innerHTML =`
-        //    <form name='plant' id ='plant' method='post'>
-        //        <select name='plant_select' id='selection' onchange='submitform();'> 
-        //            {% for plant in data %} 
-        //                <option value='{{ plant }}'>
-        //                    {{ plant }} 
-        //                </option> 
-        //            {% endfor %} 
-        //        </select> 
-        //    </form>`;
-        //document.getElementById("selection").selectedIndex = {{ preselected_plant }} 
+ 
 	}
 	document.getElementById("devices").appendChild(group);
-	//button = document.createElement("input");
-	//button.type = "submit" ;
-	//button.value = "change threshold" ;
-	//button.name =  "change" ;
-	//document.getElementById("devices").appendChild(button);
 </script>
 
 

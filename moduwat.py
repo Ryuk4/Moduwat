@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#!/usr/bin/env python -*- coding: utf-8 -*-
 from config import *
 from flask import Flask, render_template, Response, jsonify, request
 from jinja2 import Template
@@ -37,7 +36,7 @@ http_server = WSGIServer(('', 9090), app)
 d = pytz.utc.localize(datetime.datetime.now())
 date = str(d.day)+"/"+str(d.month)+"/"+str(d.year)+" at "+str(d.hour)+":"+str(d.minute)+":"+str(d.second)
 
-def poll_data(i2cCall):
+def poll_data(i2cCall, piCall):
     next=time.time()
     changed = False
     reading = True
@@ -64,7 +63,7 @@ def poll_data(i2cCall):
 
             if now > delay :
                 if reading:
-                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+599.9])
+                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+59.9])
                     connection.commit()
                     reading = False
             elif now < delay :
@@ -106,44 +105,43 @@ def poll_data(i2cCall):
                 time.sleep(0.1)
         time.sleep(0.1)
 
-def automatic(i2cCall, motorCall):
+def automatic(i2cCall, piCall,  motorCall):
     while True :
-        with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-            controlCursor = connection.cursor()
-            controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
-            mode = controlCursor.fetchall()[0][1]
+        for device in i2cCall.devices:
 
-        if mode == 1:
-            #controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
-            #i2cCall.threshold = controlCursor.fetchall()[0][1]
+            if i2cCall.mode[str(device)] == "Automatic":
+                #controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
+                #i2cCall.threshold = controlCursor.fetchall()[0][1]
 
-            with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection2:
-                cursor = connection2.cursor()
-                last_data = []
-                for device in i2cCall.devices :
-                    #cursor.execute("SELECT * FROM hygrometry"+str(device)+" ORDER BY time DESC LIMIT 1")
-                    cursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
-                    data = cursor.fetchall()
-                    if len(data) != 0:
-                        print data
-                        #last_data.append(data[1][-1])
-                        last_data.append(data[-1][1])
-
-            for device in i2cCall.devices :
+                with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection2:
+                    cursor = connection2.cursor()
+                    last_data = {}
+                    for device in i2cCall.devices :
+                        #cursor.execute("SELECT * FROM hygrometry"+str(device)+" ORDER BY time DESC LIMIT 1")
+                        cursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
+                        data = cursor.fetchall()
+                        if len(data) != 0:
+                            print data
+                            #last_data.append(data[1][-1])
+                            last_data[str(device)] = data[-1][1]
+                print(last_data)
                 if len(last_data) == len(i2cCall.devices) :
-                    if last_data[i2cCall.devices.index(device)] < i2cCall.threshold[str(device)]:
-                        with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-                            controlCursor = connection.cursor()
-                            controlCursor.execute(UPDATE_CONTROLS,["watering",1])
-                            connection.commit()
+                    if last_data[str(device)] < i2cCall.threshold[str(device)]:
                         if (pytz.utc.localize(datetime.datetime.now()).hour >10 and pytz.utc.localize(datetime.datetime.now()).hour <12 ) or ( pytz.utc.localize(datetime.datetime.now()).hour >18 and pytz.utc.localize(datetime.datetime.now()).hour <21 ) :
+                            with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+                                controlCursor = connection.cursor()
+                                controlCursor.execute(UPDATE_CONTROLS,["watering",1])
+                                connection.commit()
+
+                            i2cCall.On(device)
                             motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1]*20)
                             time.sleep(10)
+
                             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                 controlCursor = connection.cursor()
                                 controlCursor.execute(UPDATE_CONTROLS,["watering",0])
                                 connection.commit()
-        time.sleep(1200)
+        time.sleep(120)
 
 
 @app.route("/<int:device>/data.json")
@@ -167,14 +165,14 @@ def graph():
 @app.route("/settings", methods = ['POST','GET'])
 def settings():
     message=''
-    with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-        controlCursor = connection.cursor()
-        controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
-        mode = controlCursor.fetchall()[0][1]
-    if mode == 0:
-        mode='Manual'
-    elif mode == 1:
-        mode ='Automatic'
+    #with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+    #    controlCursor = connection.cursor()
+    #    controlCursor.execute("SELECT variable,data from controls where variable = 'mode'")
+    #    mode = controlCursor.fetchall()[0][1]
+    #if mode == 0:
+    #    mode='Manual'
+    #elif mode == 1:
+    #    mode ='Automatic'
     plant_list = sorted(PLANTS_CONFIG)
     #print plant_list
     preselected_id = []
@@ -189,13 +187,17 @@ def settings():
         flows = []
         if len(i2cInstance.watering) == 1:
             i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
-            flows.append(motor.flowr)
-
+        flows.append(motor.flowr)
         threshold = []
-
+        mode = []
         for device in i2cInstance.devices:
             flows.append(i2cInstance.flow[str(device)])
             threshold.append(i2cInstance.threshold[str(device)])
+            if i2cInstance.mode[str(device)] == "Manual":
+                mode.append(0)
+            if i2cInstance.mode[str(device)] == "Automatic":
+                mode.append(1)
+
 
         devices=i2cInstance.devices
         return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
@@ -212,6 +214,14 @@ def settings():
                 preselected_id[0] = plant_list.index(select)
                 i2cInstance.plant_type[str(device)] = select
                 i2cInstance.threshold[str(device)] = 100*PLANTS_CONFIG[select]['soil']
+
+        for device in i2cInstance.devices:
+            mode="mode"+str(device)
+            if mode in request.form:
+                if i2cInstance.mode[str(device)] == "Manual":
+                    i2cInstance.mode[str(device)] = "Automatic"
+                elif i2cInstance.mode[str(device)] == "Automatic":
+                    i2cInstance.mode[str(device)] = "Manual"
 
         #change adress of device
         if 'ad_change' in request.form:
@@ -266,12 +276,18 @@ def settings():
     flows = []
     if len(i2cInstance.watering) == 1:
         i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
-        flows.append(motor.flowr)
+    flows.append(motor.flowr)
     threshold=[]
+    mode = []
 
     for device in i2cInstance.devices:
         flows.append(i2cInstance.flow[str(device)])
         threshold.append(i2cInstance.threshold[str(device)])
+        if i2cInstance.mode[str(device)] == "Manual":
+            mode.append(0)
+        if i2cInstance.mode[str(device)] == "Automatic":
+            mode.append(1)
+
 
     devices = i2cInstance.devices
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
@@ -294,7 +310,7 @@ def command(cmd=None):
                     i2cInstance.On(int(command[5]))
                 controlCursor.execute(UPDATE_CONTROLS,["watering",1])
                 connection.commit()
-                
+
                 i2cInstance.flow[str(command[5])] += motor.turn(1000,1,1)
                 return 'Watering '+command[5]
             elif command[6:10] == '_OFF':
@@ -338,10 +354,10 @@ if __name__ == '__main__':
                     connection.commit()
 	except:
             pass
-        thr = Thread(target = poll_data, args=(i2cInstance))
+        thr = Thread(target = poll_data, args=(i2cInstance,pi))
         thr.daemon = True
         thr.start()
-        thr2 = Thread(target = automatic, args=(i2cInstance,motor))
+        thr2 = Thread(target = automatic, args=(i2cInstance,pi,motor))
         thr2.daemon = True
         thr2.start()
         http_server.serve_forever() 
