@@ -63,7 +63,7 @@ def poll_data(i2cCall, piCall):
 
             if now > delay :
                 if reading:
-                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+59.9])
+                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+599.9])
                     connection.commit()
                     reading = False
             elif now < delay :
@@ -108,7 +108,6 @@ def poll_data(i2cCall, piCall):
 def automatic(i2cCall, piCall,  motorCall):
     while True :
         for device in i2cCall.devices:
-
             if i2cCall.mode[str(device)] == "Automatic":
                 #controlCursor.execute("SELECT variable,data from controls where variable = 'threshold'")
                 #i2cCall.threshold = controlCursor.fetchall()[0][1]
@@ -121,7 +120,7 @@ def automatic(i2cCall, piCall,  motorCall):
                         cursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
                         data = cursor.fetchall()
                         if len(data) != 0:
-                            print data
+                            #print data
                             #last_data.append(data[1][-1])
                             last_data[str(device)] = data[-1][1]
                 print(last_data)
@@ -134,14 +133,14 @@ def automatic(i2cCall, piCall,  motorCall):
                                 connection.commit()
 
                             i2cCall.On(device)
-                            motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1]*20)
-                            time.sleep(10)
-
+                            motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1])
+                            #time.sleep(10)
+                            i2cCall.Off(device)
                             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                 controlCursor = connection.cursor()
                                 controlCursor.execute(UPDATE_CONTROLS,["watering",0])
                                 connection.commit()
-        time.sleep(120)
+        time.sleep(1200)
 
 
 @app.route("/<int:device>/data.json")
@@ -175,12 +174,12 @@ def settings():
     #    mode ='Automatic'
     plant_list = sorted(PLANTS_CONFIG)
     #print plant_list
-    preselected_id = []
-    for device in i2cInstance.devices:
-        if i2cInstance.plant_type[str(device)] != "Select":
-            preselected_id.append(plant_list.index(i2cInstance.plant_type[str(device)]))
-        else:
-            preselected_id.append(None)
+    #preselected_id = []
+    #for device in i2cInstance.devices:
+    #    if i2cInstance.plant_type[str(device)] != "Select":
+    #        preselected_id.append(plant_list.index(i2cInstance.plant_type[str(device)]))
+    #    else:
+    #        preselected_id.append(None)
 
     #print preselected_id
     if request.method == 'GET':
@@ -190,16 +189,23 @@ def settings():
         flows.append(motor.flowr)
         threshold = []
         mode = []
+        devices = []
+        preselected_id = []
         for device in i2cInstance.devices:
             flows.append(i2cInstance.flow[str(device)])
             threshold.append(i2cInstance.threshold[str(device)])
+            devices.append(device)
+            if i2cInstance.plant_type[str(device)] != "Select":
+                preselected_id.append(plant_list.index(i2cInstance.plant_type[str(device)]))
+            else:
+                preselected_id.append(None)
             if i2cInstance.mode[str(device)] == "Manual":
                 mode.append(0)
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
 
 
-        devices=i2cInstance.devices
+        #devices=i2cInstance.devices
         return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
 
 
@@ -209,15 +215,17 @@ def settings():
         for device in i2cInstance.devices:
             id_select="select"+str(device)
             if id_select in request.form:
+                print(id_select)
                 select = request.form.get(id_select)
                 selected = id_select[-1]
-                preselected_id[0] = plant_list.index(select)
+                #preselected_id[0] = plant_list.index(select)
                 i2cInstance.plant_type[str(device)] = select
                 i2cInstance.threshold[str(device)] = 100*PLANTS_CONFIG[select]['soil']
-
+        #change mode
         for device in i2cInstance.devices:
             mode="mode"+str(device)
             if mode in request.form:
+                print(mode)
                 if i2cInstance.mode[str(device)] == "Manual":
                     i2cInstance.mode[str(device)] = "Automatic"
                 elif i2cInstance.mode[str(device)] == "Automatic":
@@ -235,39 +243,39 @@ def settings():
             devicesBef=[]
             for device in i2cInstance.devices:
                 devicesBef.append(device)
-                i2cInstance.scan()
+            i2cInstance.scan()
             devices=i2cInstance.devices
-            threshold = []
-            for device in i2cInstance.devices:
-                threshold.append(i2cInstance.threshold[str(device)])
+            #threshold = []
+            #for device in i2cInstance.devices:
+            #    threshold.append(i2cInstance.threshold[str(device)])
 
-            if devicesBef != devices:
+            if len(devicesBef) < len(devices):
                 #return render_template("select_profile.html")
                 message = "New plant detected"
 
         #change mode to automatic
-        elif 'Manual' in request.form:
-            with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-                controlCursor = connection.cursor()
-                controlCursor.execute(UPDATE_CONTROLS,["mode",1])
-                connection.commit()
-            mode='Automatic'
+        #elif 'Manual' in request.form:
+        #    with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+        #        controlCursor = connection.cursor()
+        #        controlCursor.execute(UPDATE_CONTROLS,["mode",1])
+        #        connection.commit()
+        #    mode='Automatic'
 
         #change mode to manual
-        elif 'Automatic' in request.form:
-            with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-                controlCursor = connection.cursor()
-                controlCursor.execute(UPDATE_CONTROLS,["mode",0])
-                connection.commit()
-            mode='Manual'
+        #elif 'Automatic' in request.form:
+        #    with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+        #        controlCursor = connection.cursor()
+        #        controlCursor.execute(UPDATE_CONTROLS,["mode",0])
+        #        connection.commit()
+        #    mode='Manual'
 
         #change threshold
-        elif 'change' in request.form:
-            threshold = []
-            for device in i2cInstance.devices:
-                if len(request.form.get("threshold"+str(device))) > 0:
-                    i2cInstance.threshold[str(device)] = int(request.form.get("threshold"+str(device)))
-                    threshold.append(i2cInstance.threshold[str(device)])
+        #elif 'change' in request.form:
+        #    threshold = []
+        #    for device in i2cInstance.devices:
+        #        if len(request.form.get("threshold"+str(device))) > 0:
+        #            i2cInstance.threshold[str(device)] = int(request.form.get("threshold"+str(device)))
+        #            threshold.append(i2cInstance.threshold[str(device)])
 
         #request not implemented yet
         #else:
@@ -279,17 +287,23 @@ def settings():
     flows.append(motor.flowr)
     threshold=[]
     mode = []
-
+    devices = []
+    preselected_id = []
     for device in i2cInstance.devices:
         flows.append(i2cInstance.flow[str(device)])
         threshold.append(i2cInstance.threshold[str(device)])
+        devices.append(device)
         if i2cInstance.mode[str(device)] == "Manual":
             mode.append(0)
         if i2cInstance.mode[str(device)] == "Automatic":
             mode.append(1)
+        if i2cInstance.plant_type[str(device)] != "Select":
+            preselected_id.append(plant_list.index(i2cInstance.plant_type[str(device)]))
+        else:
+            preselected_id.append(None)
 
 
-    devices = i2cInstance.devices
+    #devices = i2cInstance.devices
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
 
 
@@ -340,11 +354,17 @@ if __name__ == '__main__':
             if sys.argv[1] == 'y':
                 with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
                     measureCursor = connection.cursor()
-                    for device in i2cInstance.devices:
+                    for device in i2cInstance.available_adresses:
                         sql_drop = "DROP TABLE IF EXISTS hygrometry"+str(device)
                         measureCursor.execute(sql_drop)
                         sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
                         measureCursor.execute(sql)
+                        connection.commit()
+#                    for device in i2cInstance.devices:
+#                        sql_drop = "DROP TABLE IF EXISTS hygrometry"+str(device)
+#                        measureCursor.execute(sql_drop)
+#                        sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
+#                        measureCursor.execute(sql)
                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                     controlsCursor = connection.cursor()
                     sql_drop = "DROP TABLE IF EXISTS controls"

@@ -40,6 +40,7 @@ class I2c(object):
                 continue
 
             if device == 3:
+                self.Off(device)
                 self.change_adress(device,self.available_adresses[0])
                 time.sleep(0.5)
                 self.pi.i2c_close(h)
@@ -72,16 +73,24 @@ class I2c(object):
             self.available_adresses.sort()
             self.flow[str(new_adr)] = self.flow[str(old_adr)]
             del self.flow[str(old_adr)]
+            self.threshold[str(new_adr)] = self.threshold[str(old_adr)]
+            del self.threshold[str(old_adr)]
+            self.mode[str(new_adr)] = self.mode[str(old_adr)]
+            del self.mode[str(old_adr)]
+            self.plant_type[str(new_adr)] = self.plant_type[str(old_adr)]
+            del self.plant_type[str(old_adr)]
+
+
         elif old_adr == 3:
             self.flow[str(new_adr)] = 0
+            self.threshold[str(new_adr)] = 10
+            self.mode[str(new_adr)] = "Manual"
+            self.plant_type[str(new_adr)] = "Select"
         if old_adr in self.watering:
             del self.watering[self.watering.index(old_adr)]
             self.watering.append(new_adr)
         self.devices.append(new_adr)
-        self.threshold[str(new_adr)] = self.threshold[str(old_adr)]
-        self.mode[str(new_adr)]= "Manual"
-        del self.threshold[str(old_adr)]
-        del self.mode[str(old-adr)]
+        #self.mode[str(new_adr)]= "Manual"
         self.devices.sort()
 
     def write(self, device, pwm) :

@@ -13,9 +13,7 @@ FILL_CONTROLS = '''
 INSERT INTO controls
 	(variable,data)
 VALUES
-	("mode",0),
 	("next",0),
-	("threshold",10),
 	("watering",0);
 '''
 

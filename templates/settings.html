@@ -63,18 +63,20 @@
 		column_21 = document.createElement("td");
                 column_21.innerHTML = threshold[i];
 		column_31 = document.createElement("td");
-		input31 = document.createElement("input");
-		input31.type = "submit";
-		input31.name = "mode".concat(devices[i]);
-		if(mode[i] == 1){
-			input31.value = "Automatic";
-		}
-		else{
-			input31.value = "Manual";
+		if (preselected[i] != null){
+			input31 = document.createElement("input");
+			input31.type = "submit";
+			input31.name = "mode".concat(devices[i]);
+			if(mode[i] == 1){
+				input31.value = "Automatic";
+			}
+			else{
+				input31.value = "Manual";
+			}
+			column_31.appendChild(input31);
 		}
 		column_41 = document.createElement("td");
 		column_41.innerHTML = flows[i+1];
-		column_31.appendChild(input31);
 		column_51 = document.createElement("td");
 		entry_row[i].appendChild(column_11);
 		entry_row[i].appendChild(column_21);
