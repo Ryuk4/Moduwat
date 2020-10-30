@@ -86,3 +86,63 @@ input:checked + .slider:before {
 }
 
 
+
+
+
+
+/* Icons */
+@font-face {
+  font-family: 'icomoon';
+  src:  url('static/fonts/icomoon.eot?4ce1kr');
+  src:  url('static/fonts/icomoon.eot?4ce1kr#iefix') format('embedded-opentype'),
+    url('static/fonts/icomoon.ttf?4ce1kr') format('truetype'),
+    url('static/fonts/icomoon.woff?4ce1kr') format('woff'),
+    url('static/fonts/icomoon.svg?4ce1kr#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+  font-display: block;
+}
+
+[class^="icon-"], [class*=" icon-"] {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: never;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-iconfinder_chart_line_double_5260310:before {
+  content: "\e900";
+}
+.icon-iconfinder_chart_spline_double_5260306:before {
+  content: "\e901";
+}
+.icon-database:before {
+  content: "\e964";
+}
+.icon-cog:before {
+  content: "\e994";
+}
+.icon-switch:before {
+  content: "\e9b6";
+}
+.icon-sun:before {
+  content: "\e9d4";
+}
+.icon-brightness-contrast:before {
+  content: "\e9d6";
+}
+.icon-plus:before {
+  content: "\ea0a";
+}
+.icon-minus:before {
+  content: "\ea0b";
+}
+
