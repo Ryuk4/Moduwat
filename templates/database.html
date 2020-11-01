@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+
+{% block title %}Plants{% endblock %}
+
+{% block body %}
+
+      <form action= "" id= "plants" method= "post">
+
+      </form>
+
+{% endblock %}
+
+{% block javascript %}
+<script>
+    var plants = JSON.parse('{{ plants | tojson | safe }}') ;
+    var entry_row = [];
+    group = document.createElement("table");
+    group.id = "table_settings"
+    row_1 = document.createElement("tr");
+    column_1 = document.createElement("th");
+    column_1.innerHTML = "Plant type";
+    column_2 = document.createElement("th");
+    column_2.innerHTML = "Kc";
+    column_3 = document.createElement("th");
+    column_3.innerHTML = "Soil dryness";
+    column_4 = document.createElement("th");
+    column_4.innerHTML = "Sun";
+    column_5 = document.createElement("th");
+    column_5.innerHTML = "Actions";
+    row_1.appendChild(column_1);
+    row_1.appendChild(column_2);
+    row_1.appendChild(column_3);
+    row_1.appendChild(column_4);
+    row_1.appendChild(column_5);
+    group.appendChild(row_1);
+    document.getElementById("plants").appendChild(group);
+
+    for (let i = 0; i < plants.length; i++) {
+        entry_row[i] = document.createElement("tr");
+        column_11 = document.createElement("td");
+        column_11.innerHTML = plants[i][0];
+        column_21 = document.createElement("td");
+        column_21.innerHTML = plants[i][1];
+        column_31 = document.createElement("td");
+        column_31.innerHTML = plants[i][2];
+        column_41 = document.createElement("td");
+        column_41.innerHTML = plants[i][3];
+        column_51 = document.createElement("td");
+        entry_row[i].appendChild(column_11);
+        entry_row[i].appendChild(column_21);
+        entry_row[i].appendChild(column_31);
+        entry_row[i].appendChild(column_41);
+        entry_row[i].appendChild(column_51);
+        group.appendChild(entry_row[i]);
+    }
+
+</script>
+{% endblock %}

@@ -1,22 +1,10 @@
-<html>
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/toggle.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/table.css') }}">
-    <body>
-        <div class="topnav">
-			<a href="graph" class="icon_block">
-    			<i class="icon-iconfinder_chart_spline_double_5260306"></i>
-    		</a>
-			<a href="settings" class="icon_block">
-    			<i class="icon-cog"></i>
-    		</a>
-			<a href="database" class="icon_block">
-    			<i class="icon-database"></i>
-			</a>
-			<a style="float:right" href="restart" class="icon_block">
-    			<i class="icon-switch"></i>
-			</a>
-		</div>
+{% extends "base.html" %}
+
+
+{% block title %}Settings{% endblock %}
+
+{% block body %}
+
         <div id="flow">
             The system has used {{ flows[0] }} L since {{ date }}
         </div>
@@ -37,11 +25,10 @@
       <form action= "" id= "devices" method= "post">
 
       </form>	
-      <a href="graph">Humidity plots</a>
-   </body>
-</html>
 
+{% endblock %}
 
+{% block javascript %}
 
 <script>
 	var devices = {{ devices }} ;
@@ -51,6 +38,7 @@
         var mode = {{ mode }} ;
 	var entry_row = [];
 	group = document.createElement("table");
+	group.id = "table_settings"
 	row_1 = document.createElement("tr");
 	column_1 = document.createElement("th");
 	column_1.innerHTML = "Devices";
@@ -199,3 +187,4 @@ addEventListener("DOMContentLoaded", function() {
 }, true);
 </script>
 
+{% endblock %}

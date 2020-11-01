@@ -2,6 +2,7 @@
 
 CONTROLS_LOGIN = "/media/NAS/controls.db"
 MEASUREMENTS_LOGIN = "/media/NAS/measurements.db"
+PLANTS_LOGIN = "/media/NAS/plants.db"
 
 CONTROLS_TABLE = '''
 CREATE TABLE IF NOT EXISTS controls (
@@ -24,19 +25,31 @@ CREATE TABLE IF NOT EXISTS {} (
 )
 '''
 
-PLANTS_CONFIG = {
-    'Basil'     : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
-    'Chive'     : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'mi ombre'},
-    'Cilantro'  : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
-    'Dill'      : {'Kc' : 0.8 ,'soil' : 0.4 , 'sun' : 'direct'},
-    'Lemongrass': {'Kc' : 1.2 ,'soil' : 0.6 , 'sun' : 'direct'},
-    'Mint'      : {'Kc' : 0.8 ,'soil' : 0.8 , 'sun' : 'mi ombre'},
-    'Parsley'   : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'mi ombre'},
-    'Pepper'    : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'},
-    'Rosemary'  : {'Kc' : 0.4 ,'soil' : 0.4 , 'sun' : 'direct'},
-    'Sage'      : {'Kc' : 0.4 ,'soil' : 0.4 , 'sun' : 'direct'},
-    'Tarragon'  : {'Kc' : 0.8 ,'soil' : 0.6 , 'sun' : 'direct'}
-}
+PLANTS_CONFIG = '''
+CREATE TABLE IF NOT EXISTS plants (
+    plant VARCHAR UNIQUE,
+    Kc float,
+    dry float,
+    sun VARCHAR
+)
+'''
+
+FILL_PLANTS = '''
+INSERT INTO plants
+	(plant,Kc,dry,sun)
+VALUES
+	('Basil'     , 0.8 , 0.6 , 'direct'),
+	('Chive'     , 0.8 , 0.6 , 'mi ombre'),
+	('Cilantro'  , 0.8 , 0.6 , 'direct'),
+	('Dill'      , 0.8 , 0.4 , 'direct'),
+	('Lemongrass', 1.2 , 0.6 , 'direct'),
+	('Mint'      , 0.8 , 0.8 , 'mi ombre'),
+	('Parsley'   , 0.8 , 0.6 , 'mi ombre'),
+	('Pepper'    , 0.8 , 0.6 , 'direct'),
+	('Rosemary'  , 0.4 , 0.4 , 'direct'),
+	('Sage'      , 0.4 , 0.4 , 'direct'),
+	('Tarragon'  , 0.8 , 0.6 , 'direct');
+'''
 
 
 ETP_CONFIG = [

@@ -86,18 +86,40 @@ input:checked + .slider:before {
 }
 
 
+/* tables */
+#table_settings {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
 
+#table_settings td, #table_settings th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#table_settings tr:nth-child(even){background-color: #f2f2f2;}
+
+#table_settings tr:hover {background-color: #ddd;}
+
+#table_settings th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}
 
 
 
 /* Icons */
 @font-face {
   font-family: 'icomoon';
-  src:  url('static/fonts/icomoon.eot?4ce1kr');
-  src:  url('static/fonts/icomoon.eot?4ce1kr#iefix') format('embedded-opentype'),
-    url('static/fonts/icomoon.ttf?4ce1kr') format('truetype'),
-    url('static/fonts/icomoon.woff?4ce1kr') format('woff'),
-    url('static/fonts/icomoon.svg?4ce1kr#icomoon') format('svg');
+  src:  url('/static/fonts/icomoon.eot?4ce1kr');
+  src:  url('/static/fonts/icomoon.eot?4ce1kr#iefix') format('embedded-opentype'),
+    url('/static/fonts/icomoon.ttf?4ce1kr') format('truetype'),
+    url('/static/fonts/icomoon.woff?4ce1kr') format('woff'),
+    url('/static/fonts/icomoon.svg?4ce1kr#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;

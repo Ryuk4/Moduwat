@@ -1,28 +1,9 @@
-<!DOCTYPE HTML>
-<html>
-	<head>
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<title>Humidity graph</title>
-		<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
-		<link rel="stylesheet" href="{{ url_for('static', filename='css/toggle.css') }}">
+{% extends "base.html" %}
 
-	</head>
-	<body>
-		<div class="topnav">
-			<a href="graph" class="icon_block">
-    			<i class="icon-iconfinder_chart_spline_double_5260306"></i>
-    		</a>
-			<a href="settings" class="icon_block">
-    			<i class="icon-cog"></i>
-    		</a>
-			<a href="database" class="icon_block">
-    			<i class="icon-database"></i>
-			</a>
-			<a style="float:right" href="restart" class="icon_block">
-    			<i class="icon-switch"></i>
-			</a>
-		</div>
-			
+
+{% block title %}Humidity graph{% endblock %}
+
+{% block body %}			
 		<div id="maincontainer"></div>
 <!--
 			<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
@@ -39,9 +20,8 @@
 			<a href="settings">Settings</a>
 		</div>
 -->
-	</body>
-</html>
-
+{% endblock %}
+{% block javascript %}
 <script src="{{ url_for('static', filename='jquery-1.8.3.min.js') }}"></script>
 <script src="https://code.highcharts.com/stock/highstock.js"></script>
 <script src="https://code.highcharts.com/stock/modules/data.js"></script>
@@ -217,3 +197,4 @@ addEventListener("DOMContentLoaded", function() {
 }, true); 
 </script>
 
+{% endblock %}

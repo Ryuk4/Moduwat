@@ -19,6 +19,7 @@ from flask_cors import cross_origin
 import pytz
 from gevent.pywsgi import WSGIServer
 import logging
+import os
 values = deque(maxlen=1000)
 
 pi=pigpio.pi()
@@ -27,6 +28,7 @@ motor = Motor(pi)
 
 
 app= Flask(__name__)
+
 http_server = WSGIServer(('', 9090), app)
 #logging.basicConfig(filename='debug.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
@@ -114,7 +116,7 @@ def automatic(i2cCall, piCall,  motorCall):
                         if len(data) != 0:
                             #print data
                             last_data[str(device)] = data[-1][1]
-                print(last_data)
+                #print(last_data)
                 if len(last_data) == len(i2cCall.devices) :
                     if last_data[str(device)] < i2cCall.threshold[str(device)]:
                         if (pytz.utc.localize(datetime.datetime.now()).hour >10 and pytz.utc.localize(datetime.datetime.now()).hour <12 ) or ( pytz.utc.localize(datetime.datetime.now()).hour >18 and pytz.utc.localize(datetime.datetime.now()).hour <21 ) :
@@ -124,7 +126,13 @@ def automatic(i2cCall, piCall,  motorCall):
                                 connection.commit()
 
                             i2cCall.On(device)
-                            motorCall.water(500,2,PLANTS_CONFIG[i2cCall.plant_type[str(device)]]["Kc"]*ETP_CONFIG[datetime.date.today().month-1])
+                            with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+                                cursor = connection.cursor()
+                                sql = "SELECT Kc FROM plants WHERE plant = '"+i2cCall.plant_type[str(device)]+"'"
+                                cursor.execute(sql)
+                                Kc = cursor.fetchall()[0][0]
+
+                            motorCall.water(500,2,Kc*ETP_CONFIG[datetime.date.today().month-1])
                             i2cCall.Off(device)
                             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                 controlCursor = connection.cursor()
@@ -153,7 +161,13 @@ def graph():
 @app.route("/settings", methods = ['POST','GET'])
 def settings():
     message=''
-    plant_list = sorted(PLANTS_CONFIG)
+    with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+        cursor = connection.cursor()
+        sql = "SELECT plant FROM plants"
+        cursor.execute(sql)
+        plants = cursor.fetchall()
+    plant_list = [str(sorted(plants)[x][0]) for x in range(len(plants))]
+    #print(plant_list)
     if request.method == 'GET':
         flows = []
         if len(i2cInstance.watering) == 1:
@@ -189,7 +203,13 @@ def settings():
                 select = request.form.get(id_select)
                 selected = id_select[-1]
                 i2cInstance.plant_type[str(device)] = select
-                i2cInstance.threshold[str(device)] = 100*PLANTS_CONFIG[select]['soil']
+                with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "SELECT dry FROM plants WHERE plant = '" + select + "'"
+                    cursor.execute(sql)
+                    Kc = cursor.fetchall()[0][0]
+                #print(Kc)
+                i2cInstance.threshold[str(device)] = 100*Kc
         #change mode
         for device in i2cInstance.devices:
             mode="mode"+str(device)
@@ -238,7 +258,7 @@ def settings():
         else:
             preselected_id.append(None)
 
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id))
 
 
 
@@ -277,6 +297,24 @@ def command(cmd=None):
         print(command)
         return 'Command not implemented yet'
 
+@app.route("/database", methods = ['POST','GET'])
+def show_database():
+    if request.method == 'GET':
+        with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT plant, Kc, dry, sun FROM plants"
+            cursor.execute(sql)
+            plants = cursor.fetchall()
+        print(plants)
+        plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
+        #plants = jsonify(plants)
+        return render_template("database.html",plants = plants)
+
+
+@app.route("/restart", methods = ['GET'])
+def restart():
+    if request.method == 'GET':
+        os.system('sudo reboot now')
 
 
 if __name__ == '__main__':
@@ -286,6 +324,11 @@ if __name__ == '__main__':
             i2cInstance.Off(device)
         try:
             if sys.argv[1] == 'y':
+                with sqlite3.connect(PLANTS_LOGIN,timeout=10) as connection:
+                    cursor = connection.cursor()
+                    cursor.execute(PLANTS_CONFIG)
+                    cursor.execute(FILL_PLANTS)
+                    connection.commit()
                 with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
                     measureCursor = connection.cursor()
                     for device in i2cInstance.available_adresses:
