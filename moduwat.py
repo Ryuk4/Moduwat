@@ -8,19 +8,13 @@ from i2c import I2c
 from motor import Motor
 import time
 from threading import Thread
-import codecs
-from collections import deque
-import pymysql
-import pymysql.cursors
 import sys
 import sqlite3
 import datetime
 from flask_cors import cross_origin
 import pytz
 from gevent.pywsgi import WSGIServer
-import logging
 import os
-values = deque(maxlen=1000)
 
 pi=pigpio.pi()
 i2cInstance = I2c(pi)
@@ -30,7 +24,6 @@ motor = Motor(pi)
 app= Flask(__name__)
 
 http_server = WSGIServer(('', 9090), app)
-#logging.basicConfig(filename='debug.log', level=logging.DEBUG, format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
 
 d = pytz.utc.localize(datetime.datetime.now())
@@ -199,7 +192,7 @@ def settings():
         for device in i2cInstance.devices:
             id_select="select"+str(device)
             if id_select in request.form:
-                print(id_select)
+                #print(id_select)
                 select = request.form.get(id_select)
                 selected = id_select[-1]
                 i2cInstance.plant_type[str(device)] = select
@@ -305,9 +298,8 @@ def show_database():
             sql = "SELECT plant, Kc, dry, sun FROM plants"
             cursor.execute(sql)
             plants = cursor.fetchall()
-        print(plants)
+        #print(plants)
         plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
-        #plants = jsonify(plants)
         return render_template("database.html",plants = plants)
 
 
