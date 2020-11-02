@@ -4,7 +4,7 @@ System based on Flask with some javascript to automate irrigation in the garden
 
 
 launch
-sudo python moduwat.py
+python moduwat.py or python moduwat.py y (if you want to reset databases or create them)
 
 mount to NAS
 sudo mount -t cifs -o user=usr,domain=.,password=psswd,vers=1.0 //NAS_IP/Moduwat /media/NAS/
@@ -15,6 +15,7 @@ sqlite3
 flask
 pigpiod
 
+
 ToDoList
 reset database
 authorized hours that are editable
@@ -23,20 +24,5 @@ authorized hours that are editable
 
 
 
-"CREATE TABLE controls (variable VARCHAR, data INT)"
-+-----------+------------+
-| variable  | data       |
-+-----------+------------+
-| mode      |          0 |
-| next      | 1591295229 |
-| threshold |         10 |
-| watering  |          0 |
-+-----------+------------+
 
-
-+------------+---------+
-| time       | measure |
-+------------+---------+
-| 1589541539 |     100 |
-| 1589541541 |     100 |
 
