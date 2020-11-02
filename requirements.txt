@@ -1,1 +1,7 @@
+Flask          1.1.2
+Flask-Cors     3.0.9
+gevent         20.9.0
+Jinja2         2.11.2
+pigpio         1.46
+pytz           2020.1
 
