@@ -15,6 +15,9 @@ sqlite3
 flask
 pigpiod
 
+ToDoList
+reset database
+authorized hours that are editable
 
 
 
