@@ -48,11 +48,12 @@
         column_41 = document.createElement("td");
         column_41.innerHTML = plants[i][3];
         column_51 = document.createElement("td");
-        edit = document.createElement("a");
-        edit.type = "submit";
-        edit.class = "icon_block";
-        edit_btn = document.createElement("i")
-        edit_btn.class = "icon-edit"
+        edit = document.createElement("button");
+        edit.class = "btn";
+        edit_btn = document.createElement("i");
+        edit_btn.class = "icon-edit";
+        edit_btn.type = "submit";
+        edit_btn.name = plant[i][0];
         remove = document.createElement("span");
         entry_row[i].appendChild(column_11);
         entry_row[i].appendChild(column_21);
