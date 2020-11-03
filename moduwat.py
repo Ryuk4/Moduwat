@@ -187,7 +187,7 @@ def settings():
 
 
     elif request.method == 'POST' :
-
+        print(request.form)
         #change plant type
         for device in i2cInstance.devices:
             id_select="select"+str(device)
@@ -292,6 +292,7 @@ def command(cmd=None):
 
 @app.route("/database", methods = ['POST','GET'])
 def show_database():
+    edit=""
     if request.method == 'GET':
         with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
@@ -300,7 +301,32 @@ def show_database():
             plants = cursor.fetchall()
         #print(plants)
         plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
-        return render_template("database.html",plants = plants)
+        return render_template("database.html",plants = plants,edit=json.dumps(edit))
+
+    elif request.method == 'POST' :
+        with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT plant, Kc, dry, sun FROM plants"
+            cursor.execute(sql)
+            plants = cursor.fetchall()
+        plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
+        print(request.form)
+        if "ok" in request.form:
+            pass
+        elif "cancel" in request.form:
+            return render_template("database.html",plants = plants,edit=edit)
+
+        for plant in plants:
+            if "edit"+plant[0] in request.form:
+                edit = plant[0]
+            if "remove"+plant[0] in request.form:
+                with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "SELECT plant, Kc, dry, sun FROM plants"
+                    cursor.execute(sql)
+                    connection.commit()
+
+        return render_template("database.html",plants = plants,edit=edit)
 
 
 @app.route("/restart", methods = ['GET'])

@@ -13,8 +13,7 @@
 
 {% block javascript %}
 <script>
-    var plants = JSON.parse('{{ plants | tojson | safe }}');
-    var edited = {{ }};
+    var plants = JSON.parse('{{ plants | tojson | safe }}');    
     var entry_row = [];
     group = document.createElement("table");
     group.id = "table_settings"
@@ -38,32 +37,91 @@
     document.getElementById("plants").appendChild(group);
 
     for (let i = 0; i < plants.length; i++) {
-        entry_row[i] = document.createElement("tr");
-        column_11 = document.createElement("td");
-        column_11.innerHTML = plants[i][0];
-        column_21 = document.createElement("td");
-        column_21.innerHTML = plants[i][1];
-        column_31 = document.createElement("td");
-        column_31.innerHTML = plants[i][2];
-        column_41 = document.createElement("td");
-        column_41.innerHTML = plants[i][3];
-        column_51 = document.createElement("td");
-        edit = document.createElement("button");
-        edit.class = "btn";
-        edit_btn = document.createElement("i");
-        edit_btn.class = "icon-edit";
-        edit_btn.type = "submit";
-        edit_btn.name = plant[i][0];
-        remove = document.createElement("span");
-        entry_row[i].appendChild(column_11);
-        entry_row[i].appendChild(column_21);
-        entry_row[i].appendChild(column_31);
-        entry_row[i].appendChild(column_41);
-        entry_row[i].appendChild(column_51);
-        entry_row[i].appendChild(edit);
-        
-        entry_row[i].appendChild(remove);
-        group.appendChild(entry_row[i]);
+        if ({{ edit|tojson }} != plants[i][0]){
+            entry_row[i] = document.createElement("tr");
+            column_11 = document.createElement("td");
+            column_11.innerHTML = plants[i][0];
+            column_21 = document.createElement("td");
+            column_21.innerHTML = plants[i][1];
+            column_31 = document.createElement("td");
+            column_31.innerHTML = plants[i][2];
+            column_41 = document.createElement("td");
+            column_41.innerHTML = plants[i][3];
+            column_51 = document.createElement("td");
+            edit = document.createElement("button");
+            edit.setAttribute("class", "btn");
+            edit_btn = document.createElement("i");
+            edit_btn.setAttribute("class", "icon-edit");
+            edit_btn.setAttribute("type", "submit");
+            edit.setAttribute("name", "edit"+plants[i][0]);
+            edit.setAttribute("id","edit");
+            remove = document.createElement("span");
+            remove.setAttribute("class", "btn");
+            remove_btn = document.createElement("i");
+            remove_btn.setAttribute("class", "icon-remove");
+            remove_btn.setAttribute("type", "submit");
+            remove.setAttribute("name", "remove"+plants[i][0]);
+            remove.setAttribute("id","remove");
+            entry_row[i].appendChild(column_11);
+            entry_row[i].appendChild(column_21);
+            entry_row[i].appendChild(column_31);
+            entry_row[i].appendChild(column_41);
+            edit.appendChild(edit_btn);
+            remove.appendChild(remove_btn);
+            column_51.appendChild(edit);
+            column_51.appendChild(remove);
+            entry_row[i].appendChild(column_51);        
+            group.appendChild(entry_row[i]);
+        }
+
+        else{
+            entry_row[i] = document.createElement("tr");
+            column_11 = document.createElement("td");
+            column_111 = document.createElement("input");
+            column_111.setAttribute("type","text")
+            column_111.setAttribute("placeholder", plants[i][0]);
+            column_21 = document.createElement("td");
+            column_211 = document.createElement("input");
+            column_211.setAttribute("type","text")
+            column_211.setAttribute("placeholder", plants[i][1]);
+            column_31 = document.createElement("td");
+            column_311 = document.createElement("input");
+            column_311.setAttribute("type","text")
+            column_311.setAttribute("placeholder", plants[i][2]);
+            column_41 = document.createElement("td");
+            column_411 = document.createElement("input");
+            column_411.setAttribute("type","text")
+            column_411.setAttribute("placeholder", plants[i][3]);
+            column_51 = document.createElement("td");
+            edit = document.createElement("button");
+            edit.setAttribute("class", "btn");
+            edit_btn = document.createElement("i");
+            edit_btn.setAttribute("class", "icon-ok");
+            edit_btn.setAttribute("type", "submit");
+            edit.setAttribute("name", "ok");
+            edit.setAttribute("id","edit");
+            remove = document.createElement("span");
+            remove.setAttribute("class", "btn");
+            remove_btn = document.createElement("i");
+            remove_btn.setAttribute("class", "icon-cancel");
+            remove_btn.setAttribute("type", "submit");
+            remove.setAttribute("name", "cancel");
+            remove.setAttribute("id","remove");
+            entry_row[i].appendChild(column_11);
+            column_11.appendChild(column_111);
+            entry_row[i].appendChild(column_21);
+            column_21.appendChild(column_211);
+            entry_row[i].appendChild(column_31);
+            column_31.appendChild(column_311);
+            entry_row[i].appendChild(column_41);
+            column_41.appendChild(column_411);
+            edit.appendChild(edit_btn);
+            remove.appendChild(remove_btn);
+            column_51.appendChild(edit);
+            column_51.appendChild(remove);
+            entry_row[i].appendChild(column_51);
+            group.appendChild(entry_row[i]);
+        }
     }
 
 </script>

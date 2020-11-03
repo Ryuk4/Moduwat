@@ -25,15 +25,33 @@ body {
   color: black;
 }
 
-.btn {
+#edit {
     font-size:24px;
-    background-color:white;
     border: none;
+    background-color: inherit;
     outline:none;
 }
 
-.btn:hover { cursor:pointer; }
-.btn:active { color: gray; }
+#edit:hover { cursor:pointer;
+	background-color:#ddd; }
+
+#edit:hover ~ #table_settings tr { background-color:#ddd; }
+
+#edit:active { color: gray; }
+
+#remove {
+    font-size:24px;
+    border: none;
+    background-color: inherit;
+    outline:none;
+}
+
+#remove:hover { cursor:pointer;
+        background-color:#ddd; }
+
+#remove:hover ~ #table_settings tr { background-color:#ddd; }
+
+#remove:active { color: gray; }
 
 
 .switch {
@@ -120,7 +138,6 @@ input:checked + .slider:before {
   background-color: #4CAF50;
   color: white;
 }
-
 
 
 /* Icons */
