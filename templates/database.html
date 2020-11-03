@@ -55,7 +55,7 @@
             edit_btn.setAttribute("type", "submit");
             edit.setAttribute("name", "edit"+plants[i][0]);
             edit.setAttribute("id","edit");
-            remove = document.createElement("span");
+            remove = document.createElement("button");
             remove.setAttribute("class", "btn");
             remove_btn = document.createElement("i");
             remove_btn.setAttribute("class", "icon-remove");
@@ -80,33 +80,37 @@
             column_111 = document.createElement("input");
             column_111.setAttribute("type","text")
             column_111.setAttribute("placeholder", plants[i][0]);
+            column_111.setAttribute("name","plant")
             column_21 = document.createElement("td");
             column_211 = document.createElement("input");
             column_211.setAttribute("type","text")
             column_211.setAttribute("placeholder", plants[i][1]);
+            column_211.setAttribute("name","Kc")
             column_31 = document.createElement("td");
             column_311 = document.createElement("input");
             column_311.setAttribute("type","text")
             column_311.setAttribute("placeholder", plants[i][2]);
+            column_311.setAttribute("name","threshold")
             column_41 = document.createElement("td");
             column_411 = document.createElement("input");
             column_411.setAttribute("type","text")
             column_411.setAttribute("placeholder", plants[i][3]);
+            column_411.setAttribute("name","sun")
             column_51 = document.createElement("td");
-            edit = document.createElement("button");
-            edit.setAttribute("class", "btn");
-            edit_btn = document.createElement("i");
-            edit_btn.setAttribute("class", "icon-ok");
-            edit_btn.setAttribute("type", "submit");
-            edit.setAttribute("name", "ok");
-            edit.setAttribute("id","edit");
-            remove = document.createElement("span");
-            remove.setAttribute("class", "btn");
-            remove_btn = document.createElement("i");
-            remove_btn.setAttribute("class", "icon-cancel");
-            remove_btn.setAttribute("type", "submit");
-            remove.setAttribute("name", "cancel");
-            remove.setAttribute("id","remove");
+            ok = document.createElement("button");
+            ok.setAttribute("class", "btn");
+            ok_btn = document.createElement("i");
+            ok_btn.setAttribute("class", "icon-ok");
+            ok_btn.setAttribute("type", "submit");
+            ok.setAttribute("name", "ok"+plants[i][0]);
+            ok.setAttribute("id","edit");
+            cancel = document.createElement("button");
+            cancel.setAttribute("class", "btn");
+            cancel_btn = document.createElement("i");
+            cancel_btn.setAttribute("class", "icon-cancel");
+            cancel_btn.setAttribute("type", "submit");
+            cancel.setAttribute("name", "cancel");
+            cancel.setAttribute("id","remove");
             entry_row[i].appendChild(column_11);
             column_11.appendChild(column_111);
             entry_row[i].appendChild(column_21);
@@ -115,10 +119,10 @@
             column_31.appendChild(column_311);
             entry_row[i].appendChild(column_41);
             column_41.appendChild(column_411);
-            edit.appendChild(edit_btn);
-            remove.appendChild(remove_btn);
-            column_51.appendChild(edit);
-            column_51.appendChild(remove);
+            ok.appendChild(ok_btn);
+            cancel.appendChild(cancel_btn);
+            column_51.appendChild(ok);
+            column_51.appendChild(cancel);
             entry_row[i].appendChild(column_51);
             group.appendChild(entry_row[i]);
         }

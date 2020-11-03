@@ -215,6 +215,7 @@ def settings():
 
         #change adress of device
         if 'ad_change' in request.form:
+            print(request.form)
             f_adress = int(request.form["faddress"])
             n_adress = int(request.form["naddress"])
             i2cInstance.change_adress(f_adress,n_adress)
@@ -311,10 +312,29 @@ def show_database():
             plants = cursor.fetchall()
         plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
         print(request.form)
-        if "ok" in request.form:
+        for plant in plants:
+            if "ok"+plant[0] in request.form:
+                index = plants.index(plant)
+                if str(request.form["plant"]) != "":
+                    print(str(request.form["plant"]))
+                    plants[plants.index(plant)][0] = str(request.form["plant"])
+                if str(request.form["Kc"]) != "":
+                    print(str(float(request.form["Kc"])))
+                    plants[plants.index(plant)][1] = float(request.form["Kc"])
+                if str(request.form["threshold"]) != "":
+                    print(str(float(request.form["threshold"])))
+                    plants[plants.index(plant)][2] = float(request.form["threshold"])
+                if str(request.form["sun"]) != "":
+                    print(str(request.form["sun"]))
+                    plants[plants.index(plant)][3] = str(request.form["sun"])
+                with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "REPLACE INTO plants (plant,Kc,dry,sun) VALUES(?,?,?,?)"
+                    cursor.execute(sql,plants[index])
+                    connection.commit()
+
+        if "cancel" in request.form:
             pass
-        elif "cancel" in request.form:
-            return render_template("database.html",plants = plants,edit=edit)
 
         for plant in plants:
             if "edit"+plant[0] in request.form:
@@ -344,10 +364,12 @@ if __name__ == '__main__':
             if sys.argv[1] == 'y':
                 with sqlite3.connect(PLANTS_LOGIN,timeout=10) as connection:
                     cursor = connection.cursor()
+                    sql_drop = "DROP TABLE IF EXISTS plants"
+                    cursor.execute(sql_drop)
                     cursor.execute(PLANTS_CONFIG)
                     cursor.execute(FILL_PLANTS)
                     connection.commit()
-                with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
+                '''   with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
                     measureCursor = connection.cursor()
                     for device in i2cInstance.available_adresses:
                         sql_drop = "DROP TABLE IF EXISTS hygrometry"+str(device)
@@ -366,7 +388,7 @@ if __name__ == '__main__':
                     controlsCursor.execute(sql_drop)
                     controlsCursor.execute(CONTROLS_TABLE)
                     controlsCursor.execute(FILL_CONTROLS)
-                    connection.commit()
+                    connection.commit()'''
 	except:
             pass
         thr = Thread(target = poll_data, args=(i2cInstance,pi))
