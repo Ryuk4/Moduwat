@@ -143,11 +143,11 @@ input:checked + .slider:before {
 /* Icons */
 @font-face {
   font-family: 'icomoon';
-  src:  url('/static/fonts/icomoon.eot?kyg5v7');
-  src:  url('/static/fonts/icomoon.eot?kyg5v7#iefix') format('embedded-opentype'),
-    url('/static/fonts/icomoon.ttf?kyg5v7') format('truetype'),
-    url('/static/fonts/icomoon.woff?kyg5v7') format('woff'),
-    url('/static/fonts/icomoon.svg?kyg5v7#icomoon') format('svg');
+  src:  url('/static/fonts/icomoon.eot?52m26s');
+  src:  url('/static/fonts/icomoon.eot?52m26s#iefix') format('embedded-opentype'),
+    url('/static/fonts/icomoon.ttf?52m26s') format('truetype'),
+    url('/static/fonts/icomoon.woff?52m26s') format('woff'),
+    url('/static/fonts/icomoon.svg?52m26s#icomoon') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -186,8 +186,14 @@ input:checked + .slider:before {
 .icon-remove:before {
   content: "\e9ac";
 }
+.icon-power:before {
+  content: "\e9b5";
+}
 .icon-switch:before {
   content: "\e9b6";
+}
+.icon-cloud:before {
+  content: "\e9c1";
 }
 .icon-sun:before {
   content: "\e9d4";
@@ -200,4 +206,10 @@ input:checked + .slider:before {
 }
 .icon-minus:before {
   content: "\ea0b";
+}
+.icon-cancel:before {
+  content: "\ea0e";
+}
+.icon-ok:before {
+  content: "\ea10";
 }
