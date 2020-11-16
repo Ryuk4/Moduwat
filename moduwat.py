@@ -79,7 +79,6 @@ def poll_data(i2cCall, piCall):
 
                 if read is not None:
                     val = (nowread,read)
-                    values.append(val)
                     with sqlite3.connect(MEASUREMENTS_LOGIN, timeout=10) as connection:
                         measureCursor = connection.cursor()
                         measureCursor.execute(sql,val)
@@ -124,9 +123,10 @@ def automatic(i2cCall, piCall,  motorCall):
                                 sql = "SELECT Kc FROM plants WHERE plant = '"+i2cCall.plant_type[str(device)]+"'"
                                 cursor.execute(sql)
                                 Kc = cursor.fetchall()[0][0]
-
-                            motorCall.water(500,2,Kc*ETP_CONFIG[datetime.date.today().month-1])
+                            flow = Kc*ETP_CONFIG[datetime.date.today().month-1]
+                            motorCall.water(500,2,flow)
                             i2cCall.Off(device)
+                            i2cCall.flow[str(device)] += flow
                             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                 controlCursor = connection.cursor()
                                 controlCursor.execute(UPDATE_CONTROLS,["watering",0])
@@ -297,7 +297,7 @@ def show_database():
     if request.method == 'GET':
         with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT plant, Kc, dry, sun FROM plants"
+            sql = "SELECT plant, Kc, dry, sun FROM plants ORDER BY plant ASC"
             cursor.execute(sql)
             plants = cursor.fetchall()
         #print(plants)
@@ -307,11 +307,12 @@ def show_database():
     elif request.method == 'POST' :
         with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT plant, Kc, dry, sun FROM plants"
+            sql = "SELECT plant, Kc, dry, sun FROM plants ORDER BY plant ASC"
             cursor.execute(sql)
             plants = cursor.fetchall()
         plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
         print(request.form)
+
         for plant in plants:
             if "ok"+plant[0] in request.form:
                 index = plants.index(plant)
@@ -336,15 +337,40 @@ def show_database():
         if "cancel" in request.form:
             pass
 
+        if "add" in request.form:
+            param = []
+            if str(request.form["plant"]) != "" and str(request.form["Kc"]) != "" and str(request.form["threshold"]) != "" and str(request.form["sun"]) != "" :
+                print(str(request.form["plant"]))
+                param.append(str(request.form["plant"]))
+                print(str(float(request.form["Kc"])))
+                param.append(float(request.form["Kc"]))
+                print(str(float(request.form["threshold"])))
+                param.append(float(request.form["threshold"]))
+                print(str(request.form["sun"]))
+                param.append(str(request.form["sun"]))
+                with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "INSERT INTO plants (plant,Kc,dry,sun) VALUES(?,?,?,?)"
+                    cursor.execute(sql,param)
+                    connection.commit()
+
+
         for plant in plants:
             if "edit"+plant[0] in request.form:
                 edit = plant[0]
             if "remove"+plant[0] in request.form:
                 with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
                     cursor = connection.cursor()
-                    sql = "SELECT plant, Kc, dry, sun FROM plants"
+                    sql = "DELETE FROM plants WHERE plant = '" + str(plant[0]) + "'"
                     cursor.execute(sql)
                     connection.commit()
+
+        with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT plant, Kc, dry, sun FROM plants ORDER BY plant ASC"
+            cursor.execute(sql)
+            plants = cursor.fetchall()
+        plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
 
         return render_template("database.html",plants = plants,edit=edit)
 

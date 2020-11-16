@@ -1,140 +1,149 @@
-{% extends "base.html" %}
+cursor: pointercursor: pointer{% extends "base.html" %}
 
 
 {% block title %}Settings{% endblock %}
 
 {% block body %}
 
-        <div id="flow">
-            The system has used {{ flows[0] }} L since {{ date }}
-        </div>
-        {% if message %}
-            <p>{{ message }}</p>
-        {% endif %}
-        <form action= "" method= "post">
-            <p>Enter adress to change</p>
-            <p><input type= "text" name= "faddress" /></p>
-        <p>Enter new address</p>
-    	<p><input type= "text" name=  "naddress" /></p>
-            <p><input type= "submit" name= "ad_change" value= "change adress" /></p>
-      </form>
-      <form action= "" method= "post">
-         <p><input type=  "submit" name= "scan" value= "scan" /></p>
-      </form>
+<div id="flow">
+  The system has used {{ flows[0] }} L since {{ date }}
+</div>
+{% if message %}
+  <p>{{ message }}</p>
+{% endif %}
+<form action= "" method= "post">
+  <p>Enter adress to change</p>
+    <p>
+      <input type= "text" name= "faddress" />
+    </p>
+    <p>Enter new address</p>
+    <p>
+      <input type= "text" name=  "naddress" />
+    </p>
+    <p>
+      <input type= "submit" name= "ad_change" value= "change adress" />
+    </p>
+</form>
+<form action= "" method= "post">
+  <p><input type=  "submit" name= "scan" value= "scan" />
+  </p>
+</form>
       
-      <form action= "" id= "devices" method= "post">
+<form action= "" id= "devices" method= "post">
 
-      </form>	
+</form>	
 
+<form action= "" id= "hours" method= "post">
+
+</form>
+    
 {% endblock %}
 
 {% block javascript %}
 
 <script>
-	var devices = {{ devices }} ;
-	var preselected = {{ preselected_plant }} ; 
-	var threshold = {{ threshold }} ;
-	var flows = {{ flows }} ;
-	var mode = {{ mode }} ;
-	var entry_row = [];
-	group = document.createElement("table");
-	group.id = "table_settings"
-	row_1 = document.createElement("tr");
-	column_1 = document.createElement("th");
-	column_1.innerHTML = "Devices";
-	column_2 = document.createElement("th");
-	column_2.innerHTML = "Current threshold";
-	column_3 = document.createElement("th");
-	column_3.innerHTML = "Mode";
-	column_4 = document.createElement("th");
-	column_4.innerHTML = "Flow";
-	column_5 = document.createElement("th");
-	column_5.innerHTML = "Plant profile";
-	row_1.appendChild(column_1);
-	row_1.appendChild(column_2);
-	row_1.appendChild(column_3);
-	row_1.appendChild(column_4);
-	row_1.appendChild(column_5);
-	group.appendChild(row_1);
-	document.getElementById("devices").appendChild(group);
+// all the plant settings appear here
+var devices = {{ devices }} ;
+var preselected = {{ preselected_plant }} ; 
+var threshold = {{ threshold }} ;
+var flows = {{ flows }} ;
+var mode = {{ mode }} ;
+var entry_row = [];
+group = document.createElement("table");
+group.id = "table_settings"
+row_1 = document.createElement("tr");
+column_1 = document.createElement("th");
+column_1.innerHTML = "Devices";
+column_2 = document.createElement("th");
+column_2.innerHTML = "Current threshold";
+column_3 = document.createElement("th");
+column_3.innerHTML = "Mode";
+column_4 = document.createElement("th");
+column_4.innerHTML = "Flow";
+column_5 = document.createElement("th");
+column_5.innerHTML = "Plant profile";
+row_1.appendChild(column_1);
+row_1.appendChild(column_2);
+row_1.appendChild(column_3);
+row_1.appendChild(column_4);
+row_1.appendChild(column_5);
+group.appendChild(row_1);
+document.getElementById("devices").appendChild(group);
 
-	for (let i = 0; i < devices.length; i++) {
-		entry_row[i] = document.createElement("tr");
-		column_11 = document.createElement("td");
-		column_11.innerHTML = "Device ".concat(devices[i]);
-		column_21 = document.createElement("td");
-                column_21.innerHTML = threshold[i];
-		column_31 = document.createElement("td");
-		if (preselected[i] != null){
-			input31 = document.createElement("input");
-			input31.type = "submit";
-			input31.name = "mode".concat(devices[i]);
-			if(mode[i] == 1){
-				input31.value = "Automatic";
-			}
-			else{
-				input31.value = "Manual";
-			}
-			column_31.appendChild(input31);
+for (let i = 0; i < devices.length; i++) {
+	entry_row[i] = document.createElement("tr");
+	column_11 = document.createElement("td");
+	column_11.innerHTML = "Device ".concat(devices[i]);
+	column_21 = document.createElement("td");
+	column_21.innerHTML = threshold[i];
+	column_31 = document.createElement("td");
+	if (preselected[i] != null){
+		input31 = document.createElement("input");
+		input31.type = "submit";
+		input31.name = "mode".concat(devices[i]);
+		if(mode[i] == 1){
+			input31.value = "Automatic";
 		}
-		column_41 = document.createElement("td");
-		column_41.innerHTML = flows[i+1];
-		column_51 = document.createElement("td");
-		entry_row[i].appendChild(column_11);
-		entry_row[i].appendChild(column_21);
-		entry_row[i].appendChild(column_31);
-		entry_row[i].appendChild(column_41);
-		entry_row[i].appendChild(column_51);
-		group.appendChild(entry_row[i]);
-		var id_plant = "device"+devices[i];
-		var id_select = "select"+devices[i];
-		form_plant = document.createElement("form");
-		form_plant.name = id_plant;
-		form_plant.id = id_plant;
-		
-		
-		form_plant.method = "post";
-		column_51.appendChild(form_plant);
-		if(preselected[i] ==  null){
-			form_plant.innerHTML = `
-    				<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
-                        		<option value='Select'>
-						Select
-					</option>
-					{% for plant in plants %} 
-						<option value='{{ plant }}'>
-							{{ plant }} 
-						</option> 
-					{% endfor %}
-				</select>
-			`;
+		else{
+			input31.value = "Manual";
 		}
-                else{
-                    form_plant.innerHTML = `
-                        <select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
-                            {% for plant in plants %}
-                                <option value='{{ plant }}'>
-                                    {{ plant }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    `;
-                }
-        if(preselected[i] !=  null){
-            document.getElementById(id_select).selectedIndex = preselected[i]
-        }
-        
- 
+		column_31.appendChild(input31);
 	}
-	document.getElementById("devices").appendChild(group);
+	column_41 = document.createElement("td");
+	column_41.innerHTML = flows[i+1];
+	column_51 = document.createElement("td");
+	entry_row[i].appendChild(column_11);
+	entry_row[i].appendChild(column_21);
+	entry_row[i].appendChild(column_31);
+	entry_row[i].appendChild(column_41);
+	entry_row[i].appendChild(column_51);
+	group.appendChild(entry_row[i]);
+	var id_plant = "device"+devices[i];
+	var id_select = "select"+devices[i];
+	form_plant = document.createElement("form");
+	form_plant.name = id_plant;
+	form_plant.id = id_plant;
+		
+		
+	form_plant.method = "post";
+	column_51.appendChild(form_plant);
+	if(preselected[i] ==  null){
+		form_plant.innerHTML = `
+			<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
+                      		<option value='Select'>
+					Select
+				</option>
+				{% for plant in plants %} 
+					<option value='{{ plant }}'>
+						{{ plant }} 
+					</option> 
+				{% endfor %}
+			</select>
+		`;
+	}
+	else{
+		form_plant.innerHTML = `
+			<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected[i] + `>
+				{% for plant in plants %}
+					<option value='{{ plant }}'>
+						{{ plant }}
+					</option>
+				{% endfor %}
+			</select>
+		`;
+	}
+	if(preselected[i] !=  null){
+		document.getElementById(id_select).selectedIndex = preselected[i]
+	}
+}
+document.getElementById("devices").appendChild(group);
 </script>
 
 
 <script type="text/javascript">
-//function submitform()
-//{
-//  document.plant.submit();
-//}
+//authorized hours are handled here
+
+
 </script>
 
 

@@ -127,6 +127,46 @@
             group.appendChild(entry_row[i]);
         }
     }
+    entry_row[plants.length] = document.createElement("tr");
+    column_11 = document.createElement("td");
+    column_111 = document.createElement("input");
+    column_111.setAttribute("type","text")
+    column_111.setAttribute("name","plant")
+    column_21 = document.createElement("td");
+    column_211 = document.createElement("input");
+    column_211.setAttribute("type","text")
+    column_211.setAttribute("name","Kc")
+    column_31 = document.createElement("td");
+    column_311 = document.createElement("input");
+    column_311.setAttribute("type","text")
+    column_311.setAttribute("name","threshold")
+    column_41 = document.createElement("td");
+    column_411 = document.createElement("input");
+    column_411.setAttribute("type","text")
+    column_411.setAttribute("name","sun")
+    column_51 = document.createElement("td");
+
+    add = document.createElement("button");
+    add.setAttribute("class", "btn");
+    add_btn = document.createElement("i");
+    add_btn.setAttribute("class", "icon-plus");
+    add_btn.setAttribute("type", "submit");
+    add.setAttribute("name", "add");
+    add.setAttribute("id","add");
+    add.appendChild(add_btn);
+    entry_row[plants.length].appendChild(column_11);
+    column_11.appendChild(column_111);
+    entry_row[plants.length].appendChild(column_21);
+    column_21.appendChild(column_211);
+    entry_row[plants.length].appendChild(column_31);
+    column_31.appendChild(column_311);
+    entry_row[plants.length].appendChild(column_41);
+    column_41.appendChild(column_411);
+    entry_row[plants.length].appendChild(column_51);
+    column_51.appendChild(add);
+    
+    group.appendChild(entry_row[plants.length]);
+        
 
 </script>
 {% endblock %}
