@@ -159,6 +159,13 @@ def settings():
         sql = "SELECT plant FROM plants"
         cursor.execute(sql)
         plants = cursor.fetchall()
+    
+    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+        cursor = connection.cursor()
+        sql = "SELECT start, stop FROM hours"
+        cursor.execute(sql)
+        hours = cursor.fetchall()
+    
     plant_list = [str(sorted(plants)[x][0]) for x in range(len(plants))]
     #print(plant_list)
     if request.method == 'GET':
@@ -183,7 +190,7 @@ def settings():
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
 
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id))
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours)
 
 
     elif request.method == 'POST' :
@@ -414,8 +421,11 @@ if __name__ == '__main__':
                     controlsCursor.execute(sql_drop)
                     controlsCursor.execute(CONTROLS_TABLE)
                     controlsCursor.execute(FILL_CONTROLS)
+                    sql_hours_drop = "DROP TABLE IF EXISTS hours"
+                    controlsCursor.execute(sql_hours_drop)
+                    controlsCursor.execute(HOURS_TABLE)
                     connection.commit()'''
-	except:
+        except:
             pass
         thr = Thread(target = poll_data, args=(i2cInstance,pi))
         thr.daemon = True

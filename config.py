@@ -38,12 +38,14 @@ FILL_PLANTS = '''
 INSERT INTO plants
 	(plant,Kc,dry,sun)
 VALUES
+	('Avocado'   , 1.0 , 0.7 , 'direct'),
 	('Basil'     , 0.8 , 0.6 , 'direct'),
 	('Chive'     , 0.8 , 0.6 , 'mi ombre'),
 	('Cilantro'  , 0.8 , 0.6 , 'direct'),
 	('Dill'      , 0.8 , 0.4 , 'direct'),
 	('Lemongrass', 1.2 , 0.6 , 'direct'),
 	('Mint'      , 0.8 , 0.8 , 'mi ombre'),
+   ('Mushroom'  , 0.4 , 0.9 , 'ombre'),
 	('Parsley'   , 0.8 , 0.6 , 'mi ombre'),
 	('Pepper'    , 0.8 , 0.6 , 'direct'),
 	('Rosemary'  , 0.4 , 0.4 , 'direct'),
@@ -51,6 +53,12 @@ VALUES
 	('Tarragon'  , 0.8 , 0.6 , 'direct');
 '''
 
+HOURS_TABLE = '''
+CREATE TABLE IF NOT EXISTS hours (
+    time start,
+    time stop
+)
+'''
 
 ETP_CONFIG = [
     1, #january
