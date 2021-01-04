@@ -395,7 +395,7 @@ if __name__ == '__main__':
                     cursor.execute(PLANTS_CONFIG)
                     cursor.execute(FILL_PLANTS)
                     connection.commit()
-                '''   with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
+                with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
                     measureCursor = connection.cursor()
                     for device in i2cInstance.available_adresses:
                         sql_drop = "DROP TABLE IF EXISTS hygrometry"+str(device)
@@ -414,7 +414,7 @@ if __name__ == '__main__':
                     controlsCursor.execute(sql_drop)
                     controlsCursor.execute(CONTROLS_TABLE)
                     controlsCursor.execute(FILL_CONTROLS)
-                    connection.commit()'''
+                    connection.commit()
 	except:
             pass
         thr = Thread(target = poll_data, args=(i2cInstance,pi))

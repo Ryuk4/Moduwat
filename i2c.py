@@ -134,8 +134,10 @@ class I2c(object):
             #print val
             #val = (((1.0/val)*2.48)-0.72)*100.0
             #print val
-            val = 564.3/(val+2.97)-90
+            val = ((564.3/(val+2.97)-90)-7)*100/34
             val = int(val)
+            if val>100:
+                val=100
             #val = 100-(val-100)/1.2
             print "humidity "+str(val)+"%"
             self.pi.i2c_close(h)
