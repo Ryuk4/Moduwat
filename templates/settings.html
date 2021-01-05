@@ -31,12 +31,20 @@ cursor: pointercursor: pointer{% extends "base.html" %}
       
 <form action= "" id= "devices" method= "post">
 
-</form>	
-
-<form action= "" id= "hours" method= "post">
-
 </form>
-    
+<div>
+Timeslots
+  <form action= "" id= "hours" method= "post">
+    <table id="table_hours">
+      <tr>
+        <th>Start</th>
+        <th>Stop</th>
+        <th>Actions</th>
+      </tr>
+    </table>
+  </form>
+</div>  
+
 {% endblock %}
 
 {% block javascript %}
@@ -143,7 +151,14 @@ document.getElementById("devices").appendChild(group);
 <script type="text/javascript">
 //authorized hours are handled here
 var hours = {{ hours }} ;
-
+var entry_row = [];
+for (let i = 0; i < hours.length; i++) {
+    entry_row[i] = document.createElement("tr");
+    column_11 = document.createElement("td");
+    column_11.innerHTML = hours[i][0];
+    column_21 = document.createElement("td");
+    column_21.innerHTML = hours[i][1];
+}
 </script>
 
 
