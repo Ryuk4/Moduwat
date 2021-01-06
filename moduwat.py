@@ -154,6 +154,7 @@ def graph():
 @app.route("/settings", methods = ['POST','GET'])
 def settings():
     message=''
+    edit=0
     with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
         cursor = connection.cursor()
         sql = "SELECT plant FROM plants"
@@ -190,7 +191,7 @@ def settings():
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
 
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours)
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, edit=edit)
 
 
     elif request.method == 'POST' :
@@ -259,7 +260,7 @@ def settings():
         else:
             preselected_id.append(None)
 
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id))
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit)
 
 
 

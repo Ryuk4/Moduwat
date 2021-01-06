@@ -53,6 +53,19 @@ body {
 
 #remove:active { color: gray; }
 
+#add {
+    font-size:24px;
+    border: none;
+    background-color: inherit;
+    outline:none;
+}
+
+#add:hover { cursor:pointer;
+	background-color:#ddd; }
+
+#add:hover ~ #table_settings tr { background-color:#ddd; }
+
+#add:active { color: gray; }
 
 .switch {
   position: relative;
