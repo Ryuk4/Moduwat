@@ -163,7 +163,7 @@ def settings():
     
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
         cursor = connection.cursor()
-        sql = "SELECT start, stop FROM hours"
+        sql = "SELECT Id, start, stop FROM hours"
         cursor.execute(sql)
         hours = cursor.fetchall()
     
@@ -191,7 +191,7 @@ def settings():
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
 
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=json.dumps(hours), edit=edit)
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, edit=edit)
 
 
     elif request.method == 'POST' :
@@ -345,7 +345,7 @@ def show_database():
         if "cancel" in request.form:
             pass
 
-        if "add" in request.form:
+        if "addline" in request.form:
             param = []
             if str(request.form["plant"]) != "" and str(request.form["Kc"]) != "" and str(request.form["threshold"]) != "" and str(request.form["sun"]) != "" :
                 print(str(request.form["plant"]))
