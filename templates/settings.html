@@ -150,7 +150,7 @@ document.getElementById("devices").appendChild(group);
 
 <script type="text/javascript">
 //authorized hours are handled here
-var hours = {{ hours }} ;
+var hours = {{ hours | tojson }} ;
 var entry_row = [];
 
 for (let i = 0; i < hours.length; i++) {
