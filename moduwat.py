@@ -247,7 +247,7 @@ def settings():
                     print(str(request.form["start"]))
                     hours[int(hour[0])-1][1] = str(request.form["start"])
                 if str(request.form["stop"]) != "":
-                    print(str(float(request.form["stop"])))
+                    print(str(request.form["stop"]))
                     hours[int(hour[0])-1][2] = str(request.form["stop"])
                 with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                     cursor = connection.cursor()
@@ -266,7 +266,7 @@ def settings():
                 print(str(request.form["start"]))
                 param.append(str(request.form["start"]))
                 print(str(request.form["stop"]))
-                param.append(request.form["stop"])
+                param.append(str(request.form["stop"]))
                 print(param)
                 with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                     cursor = connection.cursor()
