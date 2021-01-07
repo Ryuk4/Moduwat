@@ -238,6 +238,50 @@ def settings():
             devices=i2cInstance.devices
             if len(devicesBef) < len(devices):
                 message = "New plant detected"
+                
+        #if hour parameters modified and validated
+        for hour in hours:
+            if "ok"+hour[0] in request.form:
+                if str(request.form["start"]) != "":
+                    print(str(request.form["start"]))
+                    hours[hour[0]-1][1] = str(request.form["start"])
+                if str(request.form["stop"]) != "":
+                    print(str(float(request.form["stop"])))
+                    hours[hour[0]-1][2] = str(request.form["stop"])
+                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "REPLACE INTO hours (Id,start,stop) VALUES(?,?,?)"
+                    cursor.execute(sql,hours[hour[0]-1])
+                    connection.commit()
+        
+        #if hour parameters changes are canceled
+        if "cancel" in request.form:
+            pass
+        
+        #if new line of hour parameters
+        if "addline" in request.form:
+            param = []
+            if str(request.form["start"]) != "" and str(request.form["stop"]) != "" :
+                print(str(request.form["start"]))
+                param.append(str(request.form["start"]))
+                print(str(float(request.form["stop"])))
+                param.append(float(request.form["stop"]))
+                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "INSERT INTO hours (start,stop) VALUES(?,?)"
+                    cursor.execute(sql,param)
+                    connection.commit()
+
+        #if request for plant parameters edition or removal
+        for hour in hours:
+            if "edit"+hour[0] in request.form:
+                edit = hour[0]
+            if "remove"+hour[0] in request.form:
+                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "DELETE FROM hours WHERE Id = '" + str(hour[0]) + "'"
+                    cursor.execute(sql)
+                    connection.commit()
 
     flows = []
     if len(i2cInstance.watering) == 1:
@@ -320,7 +364,8 @@ def show_database():
             plants = cursor.fetchall()
         plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
         print(request.form)
-
+        
+        #if plant parameters modified and validated
         for plant in plants:
             if "ok"+plant[0] in request.form:
                 index = plants.index(plant)
@@ -341,10 +386,11 @@ def show_database():
                     sql = "REPLACE INTO plants (plant,Kc,dry,sun) VALUES(?,?,?,?)"
                     cursor.execute(sql,plants[index])
                     connection.commit()
-
+        #if plant parameters changes are canceled
         if "cancel" in request.form:
             pass
-
+        
+        #if new line of plant parameters
         if "addline" in request.form:
             param = []
             if str(request.form["plant"]) != "" and str(request.form["Kc"]) != "" and str(request.form["threshold"]) != "" and str(request.form["sun"]) != "" :
@@ -362,7 +408,7 @@ def show_database():
                     cursor.execute(sql,param)
                     connection.commit()
 
-
+        #if request for plant parameters edition or removal
         for plant in plants:
             if "edit"+plant[0] in request.form:
                 edit = plant[0]
