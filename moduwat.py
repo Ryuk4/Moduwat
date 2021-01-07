@@ -305,7 +305,14 @@ def settings():
             preselected_id.append(plant_list.index(i2cInstance.plant_type[str(device)]))
         else:
             preselected_id.append(None)
-
+    
+    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+        cursor = connection.cursor()
+        sql = "SELECT Id, start, stop FROM hours"
+        cursor.execute(sql)
+        hours = cursor.fetchall()
+    hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
+    
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit)
 
 
