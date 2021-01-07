@@ -265,8 +265,8 @@ def settings():
             if str(request.form["start"]) != "" and str(request.form["stop"]) != "" :
                 print(str(request.form["start"]))
                 param.append(str(request.form["start"]))
-                print(str(float(request.form["stop"])))
-                param.append(float(request.form["stop"]))
+                print(str(request.form["stop"]))
+                param.append(request.form["stop"])
                 print(param)
                 with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                     cursor = connection.cursor()
