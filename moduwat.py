@@ -111,26 +111,32 @@ def automatic(i2cCall, piCall,  motorCall):
                 #print(last_data)
                 if len(last_data) == len(i2cCall.devices) :
                     if last_data[str(device)] < i2cCall.threshold[str(device)]:
-                        if (pytz.utc.localize(datetime.datetime.now()).hour >10 and pytz.utc.localize(datetime.datetime.now()).hour <12 ) or ( pytz.utc.localize(datetime.datetime.now()).hour >18 and pytz.utc.localize(datetime.datetime.now()).hour <21 ) :
-                            with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-                                controlCursor = connection.cursor()
-                                controlCursor.execute(UPDATE_CONTROLS,["watering",1])
-                                connection.commit()
+                        with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                            cursor = connection.cursor()
+                            sql = "SELECT Id, start, stop FROM hours"
+                            cursor.execute(sql)
+                            hours = cursor.fetchall()
+                        for hour in hours:
+                            if (pytz.utc.localize(datetime.datetime.now()).time() >= datetime.datetime.strptime(hour[1],"%H:%M").time() and pytz.utc.localize(datetime.datetime.now()).time() <= datetime.datetime.strptime(hour[2],"%H:%M").time()):
+                                with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+                                    controlCursor = connection.cursor()
+                                    controlCursor.execute(UPDATE_CONTROLS,["watering",1])
+                                    connection.commit()
 
-                            i2cCall.On(device)
-                            with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
-                                cursor = connection.cursor()
-                                sql = "SELECT Kc FROM plants WHERE plant = '"+i2cCall.plant_type[str(device)]+"'"
-                                cursor.execute(sql)
-                                Kc = cursor.fetchall()[0][0]
-                            flow = Kc*ETP_CONFIG[datetime.date.today().month-1]
-                            motorCall.water(500,2,flow)
-                            i2cCall.Off(device)
-                            i2cCall.flow[str(device)] += flow
-                            with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-                                controlCursor = connection.cursor()
-                                controlCursor.execute(UPDATE_CONTROLS,["watering",0])
-                                connection.commit()
+                                i2cCall.On(device)
+                                with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
+                                    cursor = connection.cursor()
+                                    sql = "SELECT Kc FROM plants WHERE plant = '"+i2cCall.plant_type[str(device)]+"'"
+                                    cursor.execute(sql)
+                                    Kc = cursor.fetchall()[0][0]
+                                flow = Kc*ETP_CONFIG[datetime.date.today().month-1]
+                                motorCall.water(500,2,flow)
+                                i2cCall.Off(device)
+                                i2cCall.flow[str(device)] += flow
+                                with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+                                    controlCursor = connection.cursor()
+                                    controlCursor.execute(UPDATE_CONTROLS,["watering",0])
+                                    connection.commit()
         time.sleep(1200)
 
 
