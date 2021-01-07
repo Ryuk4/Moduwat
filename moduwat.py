@@ -249,6 +249,7 @@ def settings():
         #if hour parameters modified and validated
         for hour in hours:
             if "ok"+hour[0] in request.form:
+                print(hours)
                 if str(request.form["start"]) != "":
                     print(str(request.form["start"]))
                     hours[int(hour[0])-1][1] = str(request.form["start"])
