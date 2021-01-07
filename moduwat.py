@@ -242,17 +242,17 @@ def settings():
                 
         #if hour parameters modified and validated
         for hour in hours:
-            if "ok"+str(hour[0]) in request.form:
+            if "ok"+hour[0] in request.form:
                 if str(request.form["start"]) != "":
                     print(str(request.form["start"]))
-                    hours[hour[0]-1][1] = str(request.form["start"])
+                    hours[int(hour[0])-1][1] = str(request.form["start"])
                 if str(request.form["stop"]) != "":
                     print(str(float(request.form["stop"])))
-                    hours[hour[0]-1][2] = str(request.form["stop"])
+                    hours[int(hour[0])-1][2] = str(request.form["stop"])
                 with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                     cursor = connection.cursor()
                     sql = "REPLACE INTO hours (Id,start,stop) VALUES(?,?,?)"
-                    cursor.execute(sql,hours[hour[0]-1])
+                    cursor.execute(sql,hours[int(hour[0])-1])
                     connection.commit()
         
         #if hour parameters changes are canceled
@@ -267,6 +267,7 @@ def settings():
                 param.append(str(request.form["start"]))
                 print(str(float(request.form["stop"])))
                 param.append(float(request.form["stop"]))
+                print(param)
                 with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                     cursor = connection.cursor()
                     sql = "INSERT INTO hours (start,stop) VALUES(?,?)"
