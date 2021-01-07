@@ -168,6 +168,7 @@ def settings():
         hours = cursor.fetchall()
     
     plant_list = [str(sorted(plants)[x][0]) for x in range(len(plants))]
+    hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
     #print(plant_list)
     if request.method == 'GET':
         flows = []
