@@ -116,6 +116,7 @@ def automatic(i2cCall, piCall,  motorCall):
                             sql = "SELECT Id, start, stop FROM hours"
                             cursor.execute(sql)
                             hours = cursor.fetchall()
+                        hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
                         for hour in hours:
                             if (pytz.utc.localize(datetime.datetime.now()).time() >= datetime.datetime.strptime(hour[1],"%H:%M").time() and pytz.utc.localize(datetime.datetime.now()).time() <= datetime.datetime.strptime(hour[2],"%H:%M").time()):
                                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
