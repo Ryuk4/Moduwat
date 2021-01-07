@@ -241,7 +241,7 @@ def settings():
                 
         #if hour parameters modified and validated
         for hour in hours:
-            if "ok"+hour[0] in request.form:
+            if "ok"+str(hour[0]) in request.form:
                 if str(request.form["start"]) != "":
                     print(str(request.form["start"]))
                     hours[hour[0]-1][1] = str(request.form["start"])
@@ -274,9 +274,9 @@ def settings():
 
         #if request for plant parameters edition or removal
         for hour in hours:
-            if "edit"+hour[0] in request.form:
+            if "edit"+str(hour[0]) in request.form:
                 edit = hour[0]
-            if "remove"+hour[0] in request.form:
+            if "remove"+str(hour[0]) in request.form:
                 with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                     cursor = connection.cursor()
                     sql = "DELETE FROM hours WHERE Id = '" + str(hour[0]) + "'"
