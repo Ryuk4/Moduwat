@@ -98,26 +98,37 @@ def poll_data(i2cCall, piCall):
 def automatic(i2cCall, piCall,  motorCall):
     while True :
         for device in i2cCall.devices:
+            print(str(device))
             if i2cCall.mode[str(device)] == "Automatic":
+                print("automatic "+str(device))
                 with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection2:
                     cursor = connection2.cursor()
                     last_data = {}
-                    for device in i2cCall.devices :
-                        cursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
+                    for device2 in i2cCall.devices :
+                        cursor.execute("SELECT 1000*time, measure from hygrometry"+str(device2))
                         data = cursor.fetchall()
                         if len(data) != 0:
                             #print data
-                            last_data[str(device)] = data[-1][1]
-                #print(last_data)
+                            last_data[str(device2)] = data[-1][1]
+                print("last data")
+                print(last_data)
+                print(i2cCall.devices)
                 if len(last_data) == len(i2cCall.devices) :
+                    print("threshold "+str(device)+str(i2cCall.threshold[str(device)]))
                     if last_data[str(device)] < i2cCall.threshold[str(device)]:
+                        print("dry "+str(device))
                         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                             cursor = connection.cursor()
                             sql = "SELECT Id, start, stop FROM hours"
                             cursor.execute(sql)
                             hours = cursor.fetchall()
                         hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
+                        print("hours : ")
+                        print(hours)
                         for hour in hours:
+                            print("maintenant : "+str(pytz.utc.localize(datetime.datetime.now()).time()))
+                            print("start : "+str(datetime.datetime.strptime(hour[1],"%H:%M").time()))
+                            print("stop : "+str(datetime.datetime.strptime(hour[2],"%H:%M").time()))
                             if (pytz.utc.localize(datetime.datetime.now()).time() >= datetime.datetime.strptime(hour[1],"%H:%M").time() and pytz.utc.localize(datetime.datetime.now()).time() <= datetime.datetime.strptime(hour[2],"%H:%M").time()):
                                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                     controlCursor = connection.cursor()
@@ -138,6 +149,8 @@ def automatic(i2cCall, piCall,  motorCall):
                                     controlCursor = connection.cursor()
                                     controlCursor.execute(UPDATE_CONTROLS,["watering",0])
                                     connection.commit()
+                            else:
+                                print("Not in authorized hours")
         time.sleep(1200)
 
 
