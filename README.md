@@ -41,8 +41,18 @@ This is an open source project and you can contribute by posting issues. I'm ful
 
 
 ## ToDoList
-reset database
-authorized hours that are editable
+graph title as plant name instead of sensor number
+watering activation needs to be recorded
+correction to be made for speed reading when automatic watering (not activated RN)
+activation threshold needs to be recorded
+log file needs to be implemented
+timeslots for the week need to be implemented
+different weekly timeslots need to be implemented (vacation, workweek etc...)
+water level in the tank needs to be recorded with alarm in case of low level
+total flow or individual flow for each plant is faulty. Needs to be corrected
+flows for each plant need to be recorded 
+
+
 
 
 ## License
