@@ -21,7 +21,10 @@ VALUES
 HYGROMETRY_TABLE = '''
 CREATE TABLE IF NOT EXISTS {} (
     time INT UNIQUE,
-    measure INT
+    measure INT,
+    watering INT,
+    threshold INT,
+    flow INT
 )
 '''
 
@@ -45,7 +48,7 @@ VALUES
 	('Dill'      , 0.8 , 0.4 , 'direct'),
 	('Lemongrass', 1.2 , 0.6 , 'direct'),
 	('Mint'      , 0.8 , 0.8 , 'mi ombre'),
-   ('Mushroom'  , 0.4 , 0.9 , 'ombre'),
+    ('Mushroom'  , 0.4 , 0.9 , 'ombre'),
 	('Parsley'   , 0.8 , 0.6 , 'mi ombre'),
 	('Pepper'    , 0.8 , 0.6 , 'direct'),
 	('Rosemary'  , 0.4 , 0.4 , 'direct'),

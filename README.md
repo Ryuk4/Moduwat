@@ -41,16 +41,33 @@ This is an open source project and you can contribute by posting issues. I'm ful
 
 
 ## ToDoList
-graph title as plant name instead of sensor number
-watering activation needs to be recorded
+OK graph title as plant name instead of sensor number
+watering activation needs to be recorded:
+    -change database structure of plants OK
+    -add recording in the poll data thread OK
+    -add watering activation in json data as /activation+sensor_id
+    -add watering activation in graph data displayed
 correction to be made for speed reading when automatic watering (not activated RN)
-activation threshold needs to be recorded
+activation threshold needs to be recorded:
+    -change database structure of plants OK
+    -add recording in the poll data thread OK
+    -add watering threshold in json data as /threshold+sensor_id
+    -add watering threshold in graph data displayed as plotband
 log file needs to be implemented
-timeslots for the week need to be implemented
-different weekly timeslots need to be implemented (vacation, workweek etc...)
+timeslots for the week need to be implemented:
+    -change table structure
+    -change database structure of timeslots
+    -change handling of time
+    -add detection of day of the week
+    
+different weekly timeslots need to be implemented (vacation, workweek etc...):
+    -add list to be chosen from with new database structure (TBD)
 water level in the tank needs to be recorded with alarm in case of low level
 total flow or individual flow for each plant is faulty. Needs to be corrected
-flows for each plant need to be recorded 
+flows for each plant need to be recorded:
+    -change database structure of plants OK
+    -add recording in TBD thread
+    
 
 
 

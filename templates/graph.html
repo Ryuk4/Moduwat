@@ -41,15 +41,16 @@
 	var button_row = [];
 	var dry_list = {{ dry }} ;
 	var header = [];
+	var plants = JSON.parse('{{ plants | tojson | safe }}');
 	for (let i = 0; i < devices.length; i++) {
-	        containers[i] = document.createElement("div");
+        containers[i] = document.createElement("div");
 		header[i] = document.createElement("div");
 
 		if(dry_list.includes(devices[i])){
 			header[i].innerHTML = "The device ".concat(devices[i]," is too dry")
 		}
 		document.getElementById("maincontainer").appendChild(header[i]);
-	        document.getElementById("maincontainer").appendChild(containers[i]);
+		document.getElementById("maincontainer").appendChild(containers[i]);
 
 		group = document.createElement("table");
 		button_row[i] = document.createElement("tr");
@@ -58,7 +59,7 @@
 		//column_1.className = "column";
 		column_1.innerHTML = "Watering ".concat(devices[i]);
 		column_2 = document.createElement("td");
-                //column_2.className = "column";
+        //column_2.className = "column";
 		var label = document.createElement("label");
 		label.className = "switch";
 		btn = document.createElement("input");
@@ -80,9 +81,9 @@
 		button_row[i].appendChild(column_2);
 		group.appendChild(button_row[i]);
 		document.getElementById("controls").appendChild(group);
-	        Highcharts.getJSON('/'.concat(devices[i],'/data.json'), function (data) {
-	                // Create the chart
-	                Highcharts.stockChart(containers[i],{
+		Highcharts.getJSON('/'.concat(devices[i],'/data.json'), function (data) {
+		// Create the chart
+		Highcharts.stockChart(containers[i],{
 				chart : {
 					zoomType: 'x'
 				},
@@ -111,7 +112,7 @@
 	                                selected : 1
 	                        },
 	                        title : {
-	                                text : 'Sensor'.concat(String(devices[i]))
+	                                text : plants[i]
 	                        },
 				time: {
                                 	timezone: 'Europe/Oslo'

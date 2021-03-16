@@ -75,10 +75,14 @@ def poll_data(i2cCall, piCall):
             for device in i2cCall.devices: #we cover all the detected attinys
                 read = i2cCall.read_sensor(device) #we read the sensor
                 nowread = time.time() #we read the time when the measurement was done
-                sql = "INSERT INTO hygrometry"+str(device)+" (time,measure) VALUES (?,?)"
+                sql = "INSERT INTO hygrometry"+str(device)+" (time,measure,watering,threshold) VALUES (?,?,?,?)"
 
                 if read is not None:
-                    val = (nowread,read)
+                    if len(i2cCall.watering) == 1:
+                        if i2cCall.watering[0]==device:
+                            val = (nowread,read,i2cCall.watering[0],i2cCall.threshold[str(device)])
+                    else:
+                        val = (nowread,read,0,i2cCall.threshold[str(device)])
                     with sqlite3.connect(MEASUREMENTS_LOGIN, timeout=10) as connection:
                         measureCursor = connection.cursor()
                         measureCursor.execute(sql,val)
@@ -163,12 +167,33 @@ def data(device):
         results = showCursor.fetchall()
     return json.dumps(results)
 
+@app.route("/<int:device>/watering.json")
+@cross_origin()
+def data_watering(device):
+    with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
+        showCursor = connection.cursor()
+        showCursor.execute("SELECT 1000*time, watering from hygrometry"+str(device))
+        results = showCursor.fetchall()
+    return json.dumps(results)
+
+@app.route("/<int:device>/threshold.json")
+@cross_origin()
+def data_threshold(device):
+    with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
+        showCursor = connection.cursor()
+        showCursor.execute("SELECT 1000*time, threshold from hygrometry"+str(device))
+        results = showCursor.fetchall()
+    return json.dumps(results)
+
+
 @app.route("/graph")
 def graph():
     threshold=[]
+    plants=[]
     for device in i2cInstance.devices:
         threshold.append(i2cInstance.threshold[str(device)])
-    return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering, threshold = threshold, dry = i2cInstance.dry_list)
+        plants.append(i2cInstance.plant_type[str(device)])
+    return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering, threshold = threshold, dry = i2cInstance.dry_list,plants = plants)
 
 
 @app.route("/settings", methods = ['POST','GET'])
@@ -361,8 +386,8 @@ def command(cmd=None):
                 i2cInstance.flow[str(command[5])] += motor.flow()
                 i2cInstance.flow[str(command[5])] += motor.off(1)
                 i2cInstance.Off(int(command[5]))
-                if len(i2cInstance.watering) == 1:
-                    del i2cInstance.watering[0]
+                #if len(i2cInstance.watering) == 1:
+                #    del i2cInstance.watering[0]
                 controlCursor.execute(UPDATE_CONTROLS,["watering",0])
                 connection.commit()
 
