@@ -46,8 +46,9 @@ def poll_data(i2cCall, piCall):
                 if not changed:
                     reading = True
                 if reading :
-                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+1.9])
-                    connection.commit()
+                    next = time.time()+1.9
+                    #controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+1.9])
+                    #connection.commit()
                     changed = True
                     reading = False
             elif watering == 0:
@@ -58,19 +59,21 @@ def poll_data(i2cCall, piCall):
 
             if now > delay :
                 if reading:
-                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+599.9])
-                    connection.commit()
+                    next = time.time()+599.9
+                    #controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+599.9])
+                    #connection.commit()
                     reading = False
             elif now < delay :
                 if reading:
-                    controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+1.9])
-                    connection.commit()
+                    next = time.time()+1.9
+                    #controlCursor.execute(UPDATE_CONTROLS,["next",time.time()+1.9])
+                    #connection.commit()
                     reading = False
 
-        with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
-            controlCursor = connection.cursor()
-            controlCursor.execute("SELECT variable,data from controls where variable = 'next'")
-            next = controlCursor.fetchall()[0][1]
+        #with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+        #    controlCursor = connection.cursor()
+        #    controlCursor.execute("SELECT variable,data from controls where variable = 'next'")
+        #    next = controlCursor.fetchall()[0][1]
 
         if now > next :
             reading = True
@@ -207,12 +210,19 @@ def settings():
         sql = "SELECT plant FROM plants"
         cursor.execute(sql)
         plants = cursor.fetchall()
-    
+
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-        cursor = connection.cursor()
-        sql = "SELECT Id, start, stop FROM hours"
-        cursor.execute(sql)
-        hours = cursor.fetchall()
+        controlCursor = connection.cursor()
+        controlCursor.execute("SELECT data from controls where variable = 'week'")
+        week = cursor.fetchall()
+    
+    if len(week) > 0:
+        
+        with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT day, start, stop FROM hours where week = '"+week[0]+"'"
+            cursor.execute(sql)
+            hours = cursor.fetchall()
     
     plant_list = [str(sorted(plants)[x][0]) for x in range(len(plants))]
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
