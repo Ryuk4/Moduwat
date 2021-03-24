@@ -42,22 +42,28 @@ This is an open source project and you can contribute by posting issues. I'm ful
 
 ## ToDoList
 OK graph title as plant name instead of sensor number
-watering activation needs to be recorded:
+watering activation needs to be recorded: OK
     -change database structure of plants OK
     -add recording in the poll data thread OK
-    -add watering activation in json data as /activation+sensor_id
-    -add watering activation in graph data displayed
+    -add watering activation in json data as /activation+sensor_id OK
+    -add watering activation in graph data displayed OK
+    
 correction to be made for speed reading when automatic watering (not activated RN)
-activation threshold needs to be recorded:
+
+activation threshold needs to be recorded: OK
     -change database structure of plants OK
     -add recording in the poll data thread OK
-    -add watering threshold in json data as /threshold+sensor_id
-    -add watering threshold in graph data displayed as plotband
+    -add watering threshold in json data as /threshold+sensor_id OK
+    -add watering threshold in graph data displayed as plotband OK
+
 log file needs to be implemented
+
 timeslots for the week need to be implemented:
-    -change table structure
-    -change database structure of timeslots
-    -change handling of time
+    -change table structure OK
+    -change database structure of timeslots OK
+    -change handling of time : show week recap with weeks list and savetheweek button and days as buttons
+    - show days with start stop to be edited as is now
+    - open daily_timeslot with day argument
     -add detection of day of the week
     
 different weekly timeslots need to be implemented (vacation, workweek etc...):

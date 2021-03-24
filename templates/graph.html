@@ -122,28 +122,33 @@
 					ordinal: false
 				},
 				yAxis:{
-					plotBands: [{
-						color: '#FFCCCB',
-						from: 0,
-						to: threshold[i]
-					}],
 					min: 0,
 					max: 100
 				},
-	                        series : [{
-	                                name : 'Humidity',
-	                                data : data,
-	                                tooltip: {
-	                                        valueDecimals: 2
-	                                }
-	                        }],
+	                series : [{
+	                    name : 'Humidity',
+	                    data : data	                                
+	                },{
+	                    name : 'Watering',
+	                    data : data_watering
+	                },{
+	                    name : 'Threashold',
+	                    data : data_threashold,
+	                    color: '#FFCCCB',
+	                    type : 'area,
+	                    fillOpacity: 0.3,
+                        lineWidth: 0,
+                        marker: {
+                        enabled: false
+                        },
+	                }],
 				data : {
 					rowsURL : 'http://192.168.1.63:9090/'.concat(devices[i],'/data.json'),
 					enablePolling:  true,
             				dataRefreshRate: 2,
 					firstRowAsNames: false
 				}
-	                });
+	        });
 		});
 	}
 </script>

@@ -29,6 +29,8 @@ http_server = WSGIServer(('', 9090), app)
 d = pytz.utc.localize(datetime.datetime.now())
 date = str(d.day)+"/"+str(d.month)+"/"+str(d.year)+" at "+str(d.hour)+":"+str(d.minute)+":"+str(d.second)
 
+
+
 def poll_data(i2cCall, piCall):
     next=time.time()
     changed = False

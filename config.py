@@ -57,7 +57,9 @@ VALUES
 '''
 
 HOURS_TABLE = '''
-CREATE TABLE IF NOT EXISTS hours (
+CREATE TABLE IF NOT EXISTS weeks (
+    week VARCHAR,
+    day VARCHAR,
     time start,
     time stop
 )
