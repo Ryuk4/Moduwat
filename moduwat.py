@@ -373,6 +373,16 @@ def settings():
     
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit)
 
+@app.route("/day/<day>", methods = ['GET'])
+def dayly_timeslot(day=None):
+    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+        cursor = connection.cursor()
+        sql = "SELECT start, stop FROM hours WHERE day = '"+day+"'"
+        cursor.execute(sql)
+        hours = cursor.fetchall()
+    hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
+    return render_template("daily_timeslot.html", day = day, hours = hours)
+
 
 
 @app.route("/<cmd>", methods = ['GET'])
