@@ -373,17 +373,37 @@ def settings():
     
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit)
 
-@app.route("/day/<day>", methods = ['GET'])
+@app.route("/day/<day>", methods = ['POST','GET'])
 def dayly_timeslot(day=None):
-    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-        cursor = connection.cursor()
-        sql = "SELECT start, stop FROM hours WHERE day = '"+day+"'"
-        cursor.execute(sql)
-        hours = cursor.fetchall()
-    hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
-    return render_template("daily_timeslot.html", day = day, hours = hours)
+    if request.method == 'GET':
+        with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT start, stop FROM hours WHERE day = '"+day+"'"
+            cursor.execute(sql)
+            hours = cursor.fetchall()
+        hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
+        return render_template("daily_timeslot.html", day = day, hours = hours)
 
-
+    elif request.method == 'POST' :
+        for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]:
+            if "save"+day in request.form:
+                print(day)
+                if str(request.form["start"]) != "":
+                    print(str(request.form["start"]))
+                    hours[int(hour[0])-1][1] = str(request.form["start"])
+                if str(request.form["stop"]) != "":
+                    print(str(request.form["stop"]))
+                    hours[int(hour[0])-1][2] = str(request.form["stop"])
+                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "REPLACE INTO hours (Id,start,stop) VALUES(?,?,?)"
+                    cursor.execute(sql,hours[int(hour[0])-1])
+                    connection.commit()
+        
+        #if hour parameters changes are canceled
+        if "cancel" in request.form:
+            pass
+        return redirect(url_for('settings'))
 
 @app.route("/<cmd>", methods = ['GET'])
 def command(cmd=None):
