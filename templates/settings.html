@@ -60,37 +60,37 @@ Timeslots
 <table id="week_table">
   <tr id="Monday">
     <td>
-      <input type= "submit" href="day/Monday" name= "Monday" value= "Monday" />
+      <a href="{{ url_for('daily_timeslot',day='Monday') }}">Monday</a>
     </td>
   </tr>
   <tr id="Tuesday">
     <td>
-      <input type= "submit" href="day/Tuesday" name= "Tuesday" value= "Tuesday" />
+      <a href="{{ url_for('daily_timeslot',day='Tuesday') }}">Tuesday</a>
     </td>
   </tr>
   <tr id="Wednesday">
     <td>
-      <input type= "submit" href="day/Wednesday" name= "Wednesday" value= "Wednesday" />
+      <a href="{{ url_for('daily_timeslot',day='Wednesday') }}">Wednesday</a>
     </td>
   </tr>
   <tr id="Thursday">
     <td>
-      <input type= "submit" href="day/Thursday" name= "Thursday" value= "Thursday" />
+      <a href="{{ url_for('daily_timeslot',day='Thursday') }}">Thursday</a>
     </td>
   </tr>
   <tr id="Friday">
     <td>
-      <input type= "submit" href="day/Friday" name= "Friday" value= "Friday" />
+      <a href="{{ url_for('daily_timeslot',day='Friday') }}">Friday</a>
     </td>
   </tr>
   <tr id="Saturday">
     <td>
-      <input type= "submit" href="day/Saturday" name= "Saturday" value= "Saturday" />
+      <a href="{{ url_for('daily_timeslot',day='Saturday') }}">Saturday</a>
     </td>
   </tr>
   <tr id="Sunday">
     <td>
-      <input type= "submit" href="day/Sunday" name= "Sunday" value= "Sunday" />
+      <a href="{{ url_for('daily_timeslot',day='Sunday') }}">Sunday</a>
     </td>
   </tr>
 </table>

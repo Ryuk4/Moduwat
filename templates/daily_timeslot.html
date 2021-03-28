@@ -47,16 +47,17 @@ function addField( table ){
 
   newCell = newRow.insertCell(2);
   remove = document.createElement("button");
-  remove.setAttribute("class", "btn");
-  remove_btn = document.createElement("input");
-  remove_btn.setAttribute("class", "icon-remove");
-  //remove_btn.setAttribute("type", "submit");
+  remove.setAttribute("class", "icon-remove");
+  remove.setAttribute("type","button");
+  //remove_btn = document.createElement("input");
+  //remove_btn.setAttribute("class", "icon-remove");
+  //remove_btn.setAttribute("type", "button");
   //remove.setAttribute("name", "remove"+hours[i][0]);
   //remove.setAttribute("id","remove");
   //newElem.setAttribute("type", "button");
   //newElem.setAttribute("value", "Delete Row");
-  remove_btn.setAttribute("onclick", 'DeleteRowFunction(this)')
-  newCell.appendChild(newElem);
+  remove.setAttribute("onclick", 'DeleteRowFunction(this)');
+  newCell.appendChild(remove);
 }
 
 window.DeleteRowFunction = function DeleteRowFunction(o) {
@@ -127,15 +128,19 @@ column_11.setAttribute("colspan", "3")
 //column_31 = document.createElement("td");
 
 add = document.createElement("button");
-add.setAttribute("class", "btn");
-add_btn = document.createElement("input");
-add_btn.setAttribute("class", "icon-plus");
-add_btn.setAttribute("type", "submit");
-add_btn.setAttribute("onclick","addField('table_hours');")
+//add.setAttribute("class", "btn");
+//add_btn = document.createElement("input");
+//add_btn.setAttribute("class", "icon-plus");
+add.setAttribute("class", "icon-plus");
+add.setAttribute("type","button");
+//add_btn.setAttribute("type", "submit");
+//add_btn.setAttribute("onclick","addField('table_hours');")
+add.setAttribute("onclick","addField('table_hours');")
 //add.setAttribute("name", "addline");
 //add.setAttribute("id","add");
-add.appendChild(add_btn);
+//add.appendChild(add_btn);
 entry_row[hours.length].appendChild(column_11);
+column_11.appendChild(add);
 //column_11.appendChild(column_111);
 //entry_row[hours.length].appendChild(column_21);
 //column_21.appendChild(column_211);
@@ -143,3 +148,7 @@ entry_row[hours.length].appendChild(column_11);
 //column_31.appendChild(add);
 document.getElementById("table_hours").appendChild(entry_row[hours.length]);
 </script>
+
+
+{% endblock %}
+

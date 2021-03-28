@@ -126,16 +126,13 @@
 					max: 100
 				},
 	                series : [{
-	                    name : 'Humidity',
-	                    data : data	                                
+	                    name : 'Humidity'                                
 	                },{
-	                    name : 'Watering',
-	                    data : data_watering
+	                    name : 'Watering'
 	                },{
-	                    name : 'Threashold',
-	                    data : data_threashold,
+	                    name : 'Threshold',
 	                    color: '#FFCCCB',
-	                    type : 'area,
+	                    type : 'area',
 	                    fillOpacity: 0.3,
                         lineWidth: 0,
                         marker: {
@@ -146,7 +143,19 @@
 					rowsURL : 'http://192.168.1.63:9090/'.concat(devices[i],'/data.json'),
 					enablePolling:  true,
             				dataRefreshRate: 2,
-					firstRowAsNames: false
+					firstRowAsNames: false,
+					seriesMapping : [{
+						x: 0,
+						y: 1
+					},
+					{
+						x: 0,
+						y: 2
+					},
+					{
+						x:0,
+						y:3
+					}]
 				}
 	        });
 		});
@@ -183,7 +192,7 @@ addEventListener("DOMContentLoaded", function() {
 				alert(request.responseText); 
 			}; 
 			if(this.checked){
-				request.open("GET","/"+command+"_ON", true);
+				request.open("GET","/command/"+command+"_ON", true);
 				//alert("/"+command+"_ON");
 				for (var i=0, l=commandButtons.length; i<l; i++) {
 					commandButtons[i].checked = false;
@@ -191,7 +200,7 @@ addEventListener("DOMContentLoaded", function() {
 				}
 			}
 			else{
-				request.open("GET","/"+command+"_OFF", true);
+				request.open("GET","/command/"+command+"_OFF", true);
 			}
 			// We point the request at the appropriate command 
 			//request.open("GET", "/" + command, true); 

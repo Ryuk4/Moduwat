@@ -1,6 +1,6 @@
 #!/usr/bin/env python -*- coding: utf-8 -*-
 from config import *
-from flask import Flask, render_template, Response, jsonify, request
+from flask import Flask, render_template, Response, jsonify, request, redirect
 from jinja2 import Template
 import json
 import pigpio
@@ -168,25 +168,7 @@ def automatic(i2cCall, piCall,  motorCall):
 def data(device):
     with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
         showCursor = connection.cursor()
-        showCursor.execute("SELECT 1000*time, measure from hygrometry"+str(device))
-        results = showCursor.fetchall()
-    return json.dumps(results)
-
-@app.route("/<int:device>/watering.json")
-@cross_origin()
-def data_watering(device):
-    with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
-        showCursor = connection.cursor()
-        showCursor.execute("SELECT 1000*time, watering from hygrometry"+str(device))
-        results = showCursor.fetchall()
-    return json.dumps(results)
-
-@app.route("/<int:device>/threshold.json")
-@cross_origin()
-def data_threshold(device):
-    with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
-        showCursor = connection.cursor()
-        showCursor.execute("SELECT 1000*time, threshold from hygrometry"+str(device))
+        showCursor.execute("SELECT 1000*time, measure, 99*watering, threshold  from hygrometry"+str(device))
         results = showCursor.fetchall()
     return json.dumps(results)
 
@@ -215,7 +197,7 @@ def settings():
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
         week = cursor.fetchall()
-    
+
     if len(week) > 0:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
@@ -228,7 +210,7 @@ def settings():
             sql = "SELECT day, start, stop FROM ephemeralWeek"
             cursor.execute(sql)
             hours = cursor.fetchall()
-    
+
     plant_list = [str(sorted(plants)[x][0]) for x in range(len(plants))]
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
     #print(plant_list)
@@ -371,7 +353,7 @@ def settings():
     
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
         cursor = connection.cursor()
-        sql = "SELECT Id, start, stop FROM hours"
+        sql = "SELECT day, start, stop FROM hours"
         cursor.execute(sql)
         hours = cursor.fetchall()
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
@@ -379,7 +361,7 @@ def settings():
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit, week=week)
 
 @app.route("/day/<day>", methods = ['POST','GET'])
-def dayly_timeslot(day=None):
+def daily_timeslot(day=None):
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
@@ -442,7 +424,7 @@ def dayly_timeslot(day=None):
             pass
         return redirect(url_for('settings'))
 
-@app.route("/<cmd>", methods = ['GET'])
+@app.route("/command/<cmd>", methods = ['GET'])
 def command(cmd=None):
     command=cmd.upper()
     if command[0:5] == 'WATER':
@@ -576,13 +558,13 @@ if __name__ == '__main__':
             i2cInstance.Off(device)
         try:
             if sys.argv[1] == 'y':
-                with sqlite3.connect(PLANTS_LOGIN,timeout=10) as connection:
-                    cursor = connection.cursor()
-                    sql_drop = "DROP TABLE IF EXISTS plants"
-                    cursor.execute(sql_drop)
-                    cursor.execute(PLANTS_CONFIG)
-                    cursor.execute(FILL_PLANTS)
-                    connection.commit()
+                #with sqlite3.connect(PLANTS_LOGIN,timeout=10) as connection:
+                #    cursor = connection.cursor()
+                #    sql_drop = "DROP TABLE IF EXISTS plants"
+                #    cursor.execute(sql_drop)
+                #    cursor.execute(PLANTS_CONFIG)
+                #    cursor.execute(FILL_PLANTS)
+                #    connection.commit()
                 with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
                     measureCursor = connection.cursor()
                     for device in i2cInstance.available_adresses:
@@ -591,11 +573,11 @@ if __name__ == '__main__':
                         sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
                         measureCursor.execute(sql)
                         connection.commit()
-#                    for device in i2cInstance.devices:
-#                        sql_drop = "DROP TABLE IF EXISTS hygrometry"+str(device)
-#                        measureCursor.execute(sql_drop)
-#                        sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
-#                        measureCursor.execute(sql)
+                    for device in i2cInstance.devices:
+                        sql_drop = "DROP TABLE IF EXISTS hygrometry"+str(device)
+                        measureCursor.execute(sql_drop)
+                        sql = HYGROMETRY_TABLE.format("hygrometry"+str(device))
+                        measureCursor.execute(sql)
                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                     controlsCursor = connection.cursor()
                     sql_drop = "DROP TABLE IF EXISTS controls"
@@ -612,8 +594,8 @@ if __name__ == '__main__':
                     controlsCursor.execute(sql_ephemeral_week_drop)
                     controlsCursor.execute(EPHEMERAL_WEEK_TABLE)
                     connection.commit()
-        except:
-            pass
+        except Exception as e:
+            print(e)
         thr = Thread(target = poll_data, args=(i2cInstance,pi))
         thr.daemon = True
         thr.start()

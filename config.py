@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS ephemeralWeek (
     day VARCHAR,
     start TIME,
     stop TIME
+)
 '''
 
 ETP_CONFIG = [
