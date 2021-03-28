@@ -217,10 +217,15 @@ def settings():
         week = cursor.fetchall()
     
     if len(week) > 0:
-        
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
             sql = "SELECT day, start, stop FROM hours where week = '"+week[0]+"'"
+            cursor.execute(sql)
+            hours = cursor.fetchall()
+    else:
+        with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT day, start, stop FROM ephemeralWeek"
             cursor.execute(sql)
             hours = cursor.fetchall()
     
@@ -249,7 +254,7 @@ def settings():
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
 
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, edit=edit)
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, edit=edit, week=week)
 
 
     elif request.method == 'POST' :
@@ -298,50 +303,50 @@ def settings():
                 message = "New plant detected"
                 
         #if hour parameters modified and validated
-        for hour in hours:
-            if "ok"+hour[0] in request.form:
-                print(hours)
-                if str(request.form["start"]) != "":
-                    print(str(request.form["start"]))
-                    hours[int(hour[0])-1][1] = str(request.form["start"])
-                if str(request.form["stop"]) != "":
-                    print(str(request.form["stop"]))
-                    hours[int(hour[0])-1][2] = str(request.form["stop"])
-                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-                    cursor = connection.cursor()
-                    sql = "REPLACE INTO hours (Id,start,stop) VALUES(?,?,?)"
-                    cursor.execute(sql,hours[int(hour[0])-1])
-                    connection.commit()
+#        for hour in hours:
+#            if "ok"+hour[0] in request.form:
+#                print(hours)
+#                if str(request.form["start"]) != "":
+#                    print(str(request.form["start"]))
+#                    hours[int(hour[0])-1][1] = str(request.form["start"])
+#                if str(request.form["stop"]) != "":
+#                    print(str(request.form["stop"]))
+#                    hours[int(hour[0])-1][2] = str(request.form["stop"])
+#                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+#                    cursor = connection.cursor()
+#                    sql = "REPLACE INTO hours (Id,start,stop) VALUES(?,?,?)"
+#                    cursor.execute(sql,hours[int(hour[0])-1])
+#                    connection.commit()
         
         #if hour parameters changes are canceled
-        if "cancel" in request.form:
-            pass
+#        if "cancel" in request.form:
+#            pass
         
         #if new line of hour parameters
-        if "addline" in request.form:
-            param = []
-            if str(request.form["start"]) != "" and str(request.form["stop"]) != "" :
-                print(str(request.form["start"]))
-                param.append(str(request.form["start"]))
-                print(str(request.form["stop"]))
-                param.append(str(request.form["stop"]))
-                print(param)
-                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-                    cursor = connection.cursor()
-                    sql = "INSERT INTO hours (start,stop) VALUES(?,?)"
-                    cursor.execute(sql,param)
-                    connection.commit()
+#        if "addline" in request.form:
+#            param = []
+#            if str(request.form["start"]) != "" and str(request.form["stop"]) != "" :
+#                print(str(request.form["start"]))
+#                param.append(str(request.form["start"]))
+#                print(str(request.form["stop"]))
+#                param.append(str(request.form["stop"]))
+#                print(param)
+#                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+#                    cursor = connection.cursor()
+#                    sql = "INSERT INTO hours (start,stop) VALUES(?,?)"
+#                    cursor.execute(sql,param)
+#                    connection.commit()
 
-        #if request for plant parameters edition or removal
-        for hour in hours:
-            if "edit"+str(hour[0]) in request.form:
-                edit = hour[0]
-            if "remove"+str(hour[0]) in request.form:
-                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-                    cursor = connection.cursor()
-                    sql = "DELETE FROM hours WHERE Id = '" + str(hour[0]) + "'"
-                    cursor.execute(sql)
-                    connection.commit()
+        #if request for hour parameters edition or removal
+#        for hour in hours:
+#            if "edit"+str(hour[0]) in request.form:
+#                edit = hour[0]
+#            if "remove"+str(hour[0]) in request.form:
+#                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+#                    cursor = connection.cursor()
+#                    sql = "DELETE FROM hours WHERE Id = '" + str(hour[0]) + "'"
+#                    cursor.execute(sql)
+#                    connection.commit()
 
     flows = []
     if len(i2cInstance.watering) == 1:
@@ -371,35 +376,67 @@ def settings():
         hours = cursor.fetchall()
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
     
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit)
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit, week=week)
 
 @app.route("/day/<day>", methods = ['POST','GET'])
 def dayly_timeslot(day=None):
-    if request.method == 'GET':
+    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+        controlCursor = connection.cursor()
+        controlCursor.execute("SELECT data from controls where variable = 'week'")
+        week = controlCursor.fetchall()
+    if len(week) > 0:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT start, stop FROM hours WHERE day = '"+day+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+week[0]+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-        hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
+    else:
+        with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT day, start, stop FROM ephemeralWeek"
+            cursor.execute(sql)
+            hours = cursor.fetchall()
+            
+    hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
+
+    if request.method == 'GET':
+
         return render_template("daily_timeslot.html", day = day, hours = hours)
 
     elif request.method == 'POST' :
         for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]:
             if "save"+day in request.form:
                 print(day)
+                print(request.form)
                 if str(request.form["start"]) != "":
                     print(str(request.form["start"]))
                     hours[int(hour[0])-1][1] = str(request.form["start"])
                 if str(request.form["stop"]) != "":
                     print(str(request.form["stop"]))
                     hours[int(hour[0])-1][2] = str(request.form["stop"])
-                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-                    cursor = connection.cursor()
-                    sql = "REPLACE INTO hours (Id,start,stop) VALUES(?,?,?)"
-                    cursor.execute(sql,hours[int(hour[0])-1])
-                    connection.commit()
-        
+                if len(week>0):
+                    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                        cursor = connection.cursor()
+                        #sql = "REPLACE INTO hours (week,day,start,stop) VALUES(?,?,?,?)"
+                        sql1 = "DELETE FROM hours WHERE week= '"+week+"' AND day= '"+day+"'"
+                        sql = "INSERT INTO hours (week,day,start,stop) VALUES(?,?,?,?)"
+                        cursor.execute(sql1)
+                        cursor.execute(sql,week,day,hours[int(hour[0])-1])
+                        connection.commit()
+                else:
+                    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                        cursor = connection.cursor()
+                        #sql = "REPLACE INTO hours (day,start,stop) VALUES(?,?,?)"
+                        sql1 = "DELETE FROM ephemeralWeek WHERE day= '"+day+"'"
+                        sql = "INSERT INTO hours (day,start,stop) VALUES(?,?,?)"
+                        cursor.execute(sql1)
+                        cursor.execute(sql,hours[int(hour[0])-1])
+                        connection.commit()
+            
+            if "addline"+day in request.form:
+#line needs to be added to the start stop table                
+                return render_template("daily_timeslot.html", day = day, hours = hours)
+            
         #if hour parameters changes are canceled
         if "cancel" in request.form:
             pass
@@ -569,6 +606,11 @@ if __name__ == '__main__':
                     sql_hours_drop = "DROP TABLE IF EXISTS hours"
                     controlsCursor.execute(sql_hours_drop)
                     controlsCursor.execute(HOURS_TABLE)
+                    connection.commit()
+                    
+                    sql_ephemeral_week_drop = "DROP TABLE IF EXISTS ephemeralWeek"
+                    controlsCursor.execute(sql_ephemeral_week_drop)
+                    controlsCursor.execute(EPHEMERAL_WEEK_TABLE)
                     connection.commit()
         except:
             pass

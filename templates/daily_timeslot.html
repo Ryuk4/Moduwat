@@ -11,7 +11,6 @@
     <tr>
       <th>Start</th>
       <th>Stop</th>
-      <th>Actions</th>
     </tr>
   </table>
   <button class="btn" name="save"+{{ day }} id="edit">
@@ -28,104 +27,119 @@
 {% block javascript %}
 
 <script type="text/javascript">
+function addField( table ){
+
+  var tableRef = document.getElementById(table);
+  var newRow   = tableRef.insertRow(tableRef.rows.length-1);
+
+  var newCell  = newRow.insertCell(0);
+  var newElem = document.createElement( 'input' );
+  newElem.setAttribute("name", "start");
+  newElem.setAttribute("type", "time");
+  newCell.appendChild(newElem);
+
+  newCell = newRow.insertCell(1);
+  newElem = document.createElement( 'input' );
+  newElem.setAttribute("name", "stop");
+  newElem.setAttribute("type", "time");
+  newCell.appendChild(newElem);
+
+
+  newCell = newRow.insertCell(2);
+  remove = document.createElement("button");
+  remove.setAttribute("class", "btn");
+  remove_btn = document.createElement("input");
+  remove_btn.setAttribute("class", "icon-remove");
+  //remove_btn.setAttribute("type", "submit");
+  //remove.setAttribute("name", "remove"+hours[i][0]);
+  //remove.setAttribute("id","remove");
+  //newElem.setAttribute("type", "button");
+  //newElem.setAttribute("value", "Delete Row");
+  remove_btn.setAttribute("onclick", 'DeleteRowFunction(this)')
+  newCell.appendChild(newElem);
+}
+
+window.DeleteRowFunction = function DeleteRowFunction(o) {
+     var p=o.parentNode.parentNode;
+     p.parentNode.removeChild(p);
+}
+
+
 //authorized hours are handled here
 var hours = {{ hours | tojson }} ;
 var entry_row = [];
 
 for (let i = 0; i < hours.length; i++) {
-    if ({{ edit }} != hours[i][0]){
-        entry_row[i] = document.createElement("tr");
-        column_11 = document.createElement("td");
-        column_11.innerHTML = hours[i][1];
-        column_21 = document.createElement("td");
-        column_21.innerHTML = hours[i][2];
-        column_31 = document.createElement("td");
-        edit = document.createElement("button");
-        edit.setAttribute("class", "btn");
-        edit_btn = document.createElement("i");
-        edit_btn.setAttribute("class", "icon-edit");
-        edit_btn.setAttribute("type", "submit");
-        edit.setAttribute("name", "edit"+hours[i][0]);
-        edit.setAttribute("id","edit");
-        remove = document.createElement("button");
-        remove.setAttribute("class", "btn");
-        remove_btn = document.createElement("i");
-        remove_btn.setAttribute("class", "icon-remove");
-        remove_btn.setAttribute("type", "submit");
-        remove.setAttribute("name", "remove"+hours[i][0]);
-        remove.setAttribute("id","remove");
-        entry_row[i].appendChild(column_11);
-        entry_row[i].appendChild(column_21);
-        edit.appendChild(edit_btn);
-        remove.appendChild(remove_btn);
-        column_31.appendChild(edit);
-        column_31.appendChild(remove);
-        entry_row[i].appendChild(column_31);
-        document.getElementById("table_hours").appendChild(entry_row[i]);        
-    }
-    else {
-        entry_row[i] = document.createElement("tr");
-        column_11 = document.createElement("td");
-        column_111 = document.createElement("input");
-        column_111.setAttribute("type","time")
-        column_111.setAttribute("name","start")
-        column_111.setAttribute("value", hours[i][1]);
-        column_21 = document.createElement("td");
-        column_211 = document.createElement("input");
-        column_211.setAttribute("type","time")
-        column_211.setAttribute("name","stop")    
-        column_211.setAttribute("value", hours[i][2]);
-        column_31 = document.createElement("td");
-        ok = document.createElement("button");
-        ok.setAttribute("class", "btn");
-        ok_btn = document.createElement("i");
-        ok_btn.setAttribute("class", "icon-ok");
-        ok_btn.setAttribute("type", "submit");
-        ok.setAttribute("name", "ok"+hours[i][0]);
-        ok.setAttribute("id","edit");
-        cancel = document.createElement("button");
-        cancel.setAttribute("class", "btn");
-        cancel_btn = document.createElement("i");
-        cancel_btn.setAttribute("class", "icon-cancel");
-        cancel_btn.setAttribute("type", "submit");
-        cancel.setAttribute("name", "cancel");
-        cancel.setAttribute("id","remove");
-        entry_row[i].appendChild(column_11);
-        column_11.appendChild(column_111);
-        entry_row[i].appendChild(column_21);
-        column_21.appendChild(column_211);
-        ok.appendChild(ok_btn);
-        cancel.appendChild(cancel_btn);
-        column_31.appendChild(ok);
-        column_31.appendChild(cancel);
-        entry_row[i].appendChild(column_31);
-        document.getElementById("table_hours").appendChild(entry_row[i]); 
-    }
+    entry_row[i] = document.createElement("tr");
+    column_11 = document.createElement("td");
+    column_111 = document.createElement("input");
+    column_111.setAttribute("type","time")
+    column_111.setAttribute("name","start")
+    column_111.setAttribute("value", hours[i][1]);
+    column_21 = document.createElement("td");
+    column_211 = document.createElement("input");
+    column_211.setAttribute("type","time")
+    column_211.setAttribute("name","stop")    
+    column_211.setAttribute("value", hours[i][2]);
+    column_31 = document.createElement("td");
+    remove = document.createElement("input");
+    remove.setAttribute("type", "button");
+    remove.setAttribute("value", "Delete row");
+    remove.setAttribute("onclick","DeleteRowFunction(this)")
+    //ok = document.createElement("button");
+    //ok.setAttribute("class", "btn");
+    //ok_btn = document.createElement("i");
+    //ok_btn.setAttribute("class", "icon-ok");
+    //ok_btn.setAttribute("type", "submit");
+    //ok.setAttribute("name", "ok"+hours[i][0]);
+    //ok.setAttribute("id","edit");
+    //cancel = document.createElement("button");
+    //cancel.setAttribute("class", "btn");
+    //cancel_btn = document.createElement("i");
+    //cancel_btn.setAttribute("class", "icon-cancel");
+    //cancel_btn.setAttribute("type", "submit");
+    //cancel.setAttribute("name", "cancel");
+    //cancel.setAttribute("id","remove");
+    entry_row[i].appendChild(column_11);
+    column_11.appendChild(column_111);
+    entry_row[i].appendChild(column_21);
+    column_21.appendChild(column_211);
+    //ok.appendChild(ok_btn);
+    //cancel.appendChild(cancel_btn);
+    column31.appendChild(remove);
+    //column_31.appendChild(ok);
+    //column_31.appendChild(cancel);
+    entry_row[i].appendChild(column_31);
+    document.getElementById("table_hours").appendChild(entry_row[i]); 
 }
+
 entry_row[hours.length] = document.createElement("tr");
 column_11 = document.createElement("td");
-column_111 = document.createElement("input");
-column_111.setAttribute("type","time")
-column_111.setAttribute("name","start")
-column_21 = document.createElement("td");
-column_211 = document.createElement("input");
-column_211.setAttribute("type","time")
-column_211.setAttribute("name","stop")    
-column_31 = document.createElement("td");
+column_11.setAttribute("colspan", "3")
+
+//column_111 = document.createElement("input");
+//column_111.setAttribute("type","time")
+//column_111.setAttribute("name","start")
+//column_21 = document.createElement("td");
+//column_211 = document.createElement("input");
+//column_211.setAttribute("type","time")
+//column_211.setAttribute("name","stop")    
+//column_31 = document.createElement("td");
 
 add = document.createElement("button");
 add.setAttribute("class", "btn");
-add_btn = document.createElement("i");
+add_btn = document.createElement("input");
 add_btn.setAttribute("class", "icon-plus");
 add_btn.setAttribute("type", "submit");
-add.setAttribute("name", "addline");
-add.setAttribute("id","add");
+add_btn.setAttribute("onclick","addField('table_hours');")
+//add.setAttribute("name", "addline");
+//add.setAttribute("id","add");
 add.appendChild(add_btn);
 entry_row[hours.length].appendChild(column_11);
-column_11.appendChild(column_111);
-entry_row[hours.length].appendChild(column_21);
-column_21.appendChild(column_211);
-entry_row[hours.length].appendChild(column_31);
-column_31.appendChild(add);
+//column_11.appendChild(column_111);
+//entry_row[hours.length].appendChild(column_21);
+//column_21.appendChild(column_211);
+//entry_row[hours.length].appendChild(column_31);
+//column_31.appendChild(add);
 document.getElementById("table_hours").appendChild(entry_row[hours.length]);
 </script>

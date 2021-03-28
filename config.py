@@ -60,9 +60,16 @@ HOURS_TABLE = '''
 CREATE TABLE IF NOT EXISTS hours (
     week VARCHAR,
     day VARCHAR,
-    time start,
-    time stop
+    start TIME,
+    stop TIME
 )
+'''
+
+EPHEMERAL_WEEK_TABLE = '''
+CREATE TABLE IF NOT EXISTS ephemeralWeek (
+    day VARCHAR,
+    start TIME,
+    stop TIME
 '''
 
 ETP_CONFIG = [
