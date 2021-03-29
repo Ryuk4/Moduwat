@@ -56,9 +56,9 @@ Timeslots
         {% endfor %}
     </select>
 </form>
-
-<input type= "submit" name= "new_week" value= "New_week" />
-
+<form>
+  <input type= "submit" name= "new_week" value= "New_week" />
+</form>
 <table id="week_table">
   <tr id="Monday">
     <td>
@@ -109,7 +109,7 @@ Timeslots
 
 <script>
 var weeks = {{ weeks | tojson }};
-var preselected_week = {{ selected_week }} ;
+var preselected_week = {{ selected_week }}[0] ;
 
 //hours table handled here
 var hours_list = {{ hours | tojson }};

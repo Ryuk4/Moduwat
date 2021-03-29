@@ -10,16 +10,16 @@
         </head>
         <header>
                 <div class="topnav">
-                        <a href="graph" class="icon_block">
+                        <a href="{{ url_for('graph') }}" class="icon_block">
                         <i class="icon-chart_spline"></i>
                 </a>
-                        <a href="settings" class="icon_block">
+                        <a href="{{ url_for('settings') }}" class="icon_block">
                         <i class="icon-parameters"></i>
                 </a>
-                        <a href="database" class="icon_block">
+                        <a href="{{ url_for('show_database') }}" class="icon_block">
                         <i class="icon-database"></i>
                         </a>
-                        <a style="float:right" href = "restart" onclick = "{if (confirm ( 'Are you sure you want to restart ?')) {return true;} return false;} " class="icon_block">
+                        <a style="float:right" href = "{{ url_for('restart') }}" onclick = "{if (confirm ( 'Are you sure you want to restart ?')) {return true;} return false;} " class="icon_block">
                         <i class="icon-switch"></i>
                         </a>
                 </div>

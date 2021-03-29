@@ -1,6 +1,6 @@
 #!/usr/bin/env python -*- coding: utf-8 -*-
 from config import *
-from flask import Flask, render_template, Response, jsonify, request, redirect
+from flask import Flask, render_template, Response, jsonify, request, redirect, url_for
 from jinja2 import Template
 import json
 import pigpio
@@ -42,6 +42,7 @@ def poll_data(i2cCall, piCall):
             controlCursor = connection.cursor()
             controlCursor.execute("SELECT variable,data from controls where variable = 'fastreading'")
             fastreading = controlCursor.fetchall()[0][1]
+            #print fastreading
             if fastreading == 1:
                 if not changed:
                     reading = True
@@ -141,7 +142,7 @@ def automatic(i2cCall, piCall,  motorCall):
                             if (pytz.utc.localize(datetime.datetime.now()).time() >= datetime.datetime.strptime(hour[1],"%H:%M").time() and pytz.utc.localize(datetime.datetime.now()).time() <= datetime.datetime.strptime(hour[2],"%H:%M").time()):
                                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                     controlCursor = connection.cursor()
-                                    controlCursor.execute(UPDATE_CONTROLS,"fastreading",1)
+                                    controlCursor.execute(UPDATE_CONTROLS,("fastreading",1))
                                     connection.commit()
 
                                 i2cCall.On(device)
@@ -156,7 +157,7 @@ def automatic(i2cCall, piCall,  motorCall):
                                 i2cCall.flow[str(device)] += flow
                                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                     controlCursor = connection.cursor()
-                                    controlCursor.execute(UPDATE_CONTROLS,"fastreading",0)
+                                    controlCursor.execute(UPDATE_CONTROLS,("fastreading",0))
                                     connection.commit()
                             else:
                                 print("Not in authorized hours")
@@ -187,7 +188,7 @@ def graph():
 def settings():
     message=''
     edit=0
-    selected_week=""
+    selected_week=[]
     with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
         cursor = connection.cursor()
         sql = "SELECT plant FROM plants"
@@ -201,13 +202,14 @@ def settings():
         sql = "SELECT DISTINCT week FROM hours"
         controlCursor.execute(sql)
         weeks = controlCursor.fetchall()
-
-    if len(selected_week) > 0:
+    print selected_week
+    if selected_week :
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
             sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
+
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
@@ -239,8 +241,8 @@ def settings():
                 mode.append(0)
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
-
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
+        print selected_week
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=json.dumps([selected_week]), weeks=weeks)
 
 
     elif request.method == 'POST' :
@@ -287,8 +289,9 @@ def settings():
                 cursor.execute(sql)
                 hours = cursor.fetchall()
                 for hour in hours:
+                    hour=list(hour)
                     hour.insert(0,week_name)
-                    cursor.execute(INSERT_WEEK,hour[0],hour[1],hour[2],hour[3])
+                    cursor.execute(INSERT_WEEK,hour)
                 sql2 = "DELETE FROM ephemeralWeek"
                 cursor.execute(sql2)
                 connection.commit()
@@ -296,6 +299,7 @@ def settings():
                 
         if 'new_week' in request.form:
             selected_week=""
+            print 'new week'
             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                 cursor = connection.cursor()
                 sql = "DELETE FROM ephemeralWeek"
@@ -394,28 +398,29 @@ def settings():
         cursor.execute(sql)
         hours = cursor.fetchall()
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
-    
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
+    selected_week=""
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=json.dumps([selected_week]), weeks=json.dumps(weeks))
 
-@app.route("/day/<day>", methods = ['POST','GET'])
+@app.route("/<day>/day", methods = ['POST','GET'])
 def daily_timeslot(day=None):
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
         selected_week = controlCursor.fetchall()
-    if len(selected_week) > 0:
+    print selected_week
+    if selected_week :
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"' AND day= '"+day+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM ephemeralWeek"
+            sql = "SELECT day, start, stop FROM ephemeralWeek where day= '"+day+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-            
+
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
 
     if request.method == 'GET':
@@ -429,33 +434,31 @@ def daily_timeslot(day=None):
                 print(request.form)
                 if str(request.form["start"]) != "":
                     print(str(request.form["start"]))
-                    hours[int(hour[0])-1][1] = str(request.form["start"])
+                    start = str(request.form["start"])
                 if str(request.form["stop"]) != "":
                     print(str(request.form["stop"]))
-                    hours[int(hour[0])-1][2] = str(request.form["stop"])
-                if len(week>0):
+                    stop = str(request.form["stop"])
+                print selected_week
+                if selected_week:
                     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                         cursor = connection.cursor()
                         #sql = "REPLACE INTO hours (week,day,start,stop) VALUES(?,?,?,?)"
                         sql1 = "DELETE FROM hours WHERE week= '"+week+"' AND day= '"+day+"'"
                         sql = "INSERT INTO hours (week,day,start,stop) VALUES(?,?,?,?)"
                         cursor.execute(sql1)
-                        cursor.execute(sql,week,day,hours[int(hour[0])-1])
+                        cursor.execute(sql,(week,day,start,stop))
                         connection.commit()
+
                 else:
                     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                         cursor = connection.cursor()
                         #sql = "REPLACE INTO hours (day,start,stop) VALUES(?,?,?)"
                         sql1 = "DELETE FROM ephemeralWeek WHERE day= '"+day+"'"
-                        sql = "INSERT INTO hours (day,start,stop) VALUES(?,?,?)"
+                        sql = "INSERT INTO ephemeralWeek (day,start,stop) VALUES(?,?,?)"
                         cursor.execute(sql1)
-                        cursor.execute(sql,hours[int(hour[0])-1])
+                        cursor.execute(sql,(day,start,stop))
                         connection.commit()
-            
-            if "addline"+day in request.form:
-#line needs to be added to the start stop table                
-                return render_template("daily_timeslot.html", day = day, hours = hours)
-            
+
         #if hour parameters changes are canceled
         if "cancel" in request.form:
             pass
@@ -475,7 +478,7 @@ def command(cmd=None):
                     i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
                     i2cInstance.Off(i2cInstance.watering[0])
                     i2cInstance.On(int(command[5]))
-                controlCursor.execute(UPDATE_CONTROLS,"fastreading",1)
+                controlCursor.execute(UPDATE_CONTROLS,("fastreading",1))
                 connection.commit()
 
                 i2cInstance.flow[str(command[5])] += motor.turn(1000,1,1)
@@ -486,7 +489,7 @@ def command(cmd=None):
                 i2cInstance.Off(int(command[5]))
                 #if len(i2cInstance.watering) == 1:
                 #    del i2cInstance.watering[0]
-                controlCursor.execute(UPDATE_CONTROLS,"fastreading",0)
+                controlCursor.execute(UPDATE_CONTROLS,("fastreading",0))
                 connection.commit()
 
                 return 'Stop watering '+command[5]

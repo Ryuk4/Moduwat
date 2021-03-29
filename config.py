@@ -92,7 +92,7 @@ ETP_CONFIG = [
 UPDATE_CONTROLS = '''REPLACE INTO controls(variable,data) VALUES(?,?)'''
 INSERT_CONTROLS = '''INSERT INTO controls(variable,data) VALUES(?,?)'''
 INSERT_HYGRO = '''INSERT INTO {} (time,measure) VALUES (?,?)'''
-INSERT_WEEK = '''INSERT INTO HOURS_TABLE(week,day,start,stop) VALUES(?,?,?,?)'''
+INSERT_WEEK = '''INSERT INTO hours(week,day,start,stop) VALUES(?,?,?,?)'''
 
 FLASK_CONFIG = {
     'host'      : '0.0.0.0', # allows connection outside of localhost

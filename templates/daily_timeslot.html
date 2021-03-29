@@ -13,7 +13,7 @@
       <th>Stop</th>
     </tr>
   </table>
-  <button class="btn" name="save"+{{ day }} id="edit">
+  <button class="btn" name="save{{ day }}" id="edit">
     <i class="icon-ok" type="submit"></i>
   </button>
   <button class="btn" name="cancel" id="remove">
@@ -107,7 +107,7 @@ for (let i = 0; i < hours.length; i++) {
     column_21.appendChild(column_211);
     //ok.appendChild(ok_btn);
     //cancel.appendChild(cancel_btn);
-    column31.appendChild(remove);
+    column_31.appendChild(remove);
     //column_31.appendChild(ok);
     //column_31.appendChild(cancel);
     entry_row[i].appendChild(column_31);
