@@ -47,15 +47,17 @@ Timeslots
 </form>
  -->
 
-//<form id="week">
-//    <select id="id_week" name="id_week" onchange='document.getElementById("id_plant").submit();' selected=` + preselected[i] + `>
-//        {% for plant in plants %}
-//            <option value='{{ plant }}'>
-//                {{ plant }}
-//            </option>
-//        {% endfor %}
-//    </select>
-//</form>
+<form id="week">
+    <select id="select_week" name="select_week" onchange='document.getElementById("select_week").submit();' selected=` + preselected_week+ `>
+        {% for week in weeks %}
+            <option value='{{ week }}'>
+                {{ week }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+<input type= "submit" name= "new_week" value= "New_week" />
 
 <table id="week_table">
   <tr id="Monday">
@@ -95,22 +97,31 @@ Timeslots
   </tr>
 </table>
 
+<form action= "" method= "post">
+  <p>Week name</p>
+  <input type= "text" name= "week_name" />
+  <input type= "submit" name= "save_week" value= "Save the week" />
+</form>
+
 {% endblock %}
 
 {% block javascript %}
 
 <script>
-//week table handled here
-var week_list = {{ hours | tojson }};
+var weeks = {{ weeks | tojson }};
+var preselected_week = {{ selected_week }} ;
+
+//hours table handled here
+var hours_list = {{ hours | tojson }};
 
 //var weekMaxLength = 0;
 //for (var i = 0, length = week_list.length; i < length; i++) {
 //    weekMaxLength = Math.max(weekMaxLength, week_list[i].length);
 //}
-for (let i = 0; i < week_list.length; i++) {
+for (let i = 0; i < hours_list.length; i++) {
     column = document.createElement("td");
-    document.getElementById(week_list[i][0]).appendChild(column);
-    column.innerHTML = week_list[i][1]+"-"+week_list[i][2];
+    document.getElementById(hours_list[i][0]).appendChild(column);
+    column.innerHTML = hours_list[i][1]+"-"+hours_list[i][2];
 }
 </script>
 

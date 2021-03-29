@@ -40,9 +40,9 @@ def poll_data(i2cCall, piCall):
         now=time.time()
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             controlCursor = connection.cursor()
-            controlCursor.execute("SELECT variable,data from controls where variable = 'watering'")
-            watering = controlCursor.fetchall()[0][1]
-            if watering == 1:
+            controlCursor.execute("SELECT variable,data from controls where variable = 'fastreading'")
+            fastreading = controlCursor.fetchall()[0][1]
+            if fastreading == 1:
                 if not changed:
                     reading = True
                 if reading :
@@ -51,7 +51,7 @@ def poll_data(i2cCall, piCall):
                     #connection.commit()
                     changed = True
                     reading = False
-            elif watering == 0:
+            elif fastreading == 0:
                 if changed:
                     delay = time.time()+60
                     changed = False
@@ -141,7 +141,7 @@ def automatic(i2cCall, piCall,  motorCall):
                             if (pytz.utc.localize(datetime.datetime.now()).time() >= datetime.datetime.strptime(hour[1],"%H:%M").time() and pytz.utc.localize(datetime.datetime.now()).time() <= datetime.datetime.strptime(hour[2],"%H:%M").time()):
                                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                     controlCursor = connection.cursor()
-                                    controlCursor.execute(UPDATE_CONTROLS,["watering",1])
+                                    controlCursor.execute(UPDATE_CONTROLS,"fastreading",1)
                                     connection.commit()
 
                                 i2cCall.On(device)
@@ -156,7 +156,7 @@ def automatic(i2cCall, piCall,  motorCall):
                                 i2cCall.flow[str(device)] += flow
                                 with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                                     controlCursor = connection.cursor()
-                                    controlCursor.execute(UPDATE_CONTROLS,["watering",0])
+                                    controlCursor.execute(UPDATE_CONTROLS,"fastreading",0)
                                     connection.commit()
                             else:
                                 print("Not in authorized hours")
@@ -187,6 +187,7 @@ def graph():
 def settings():
     message=''
     edit=0
+    selected_week=""
     with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
         cursor = connection.cursor()
         sql = "SELECT plant FROM plants"
@@ -196,12 +197,15 @@ def settings():
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
-        week = cursor.fetchall()
+        selected_week = controlCursor.fetchall()
+        sql = "SELECT DISTINCT week FROM hours"
+        controlCursor.execute(sql)
+        weeks = controlCursor.fetchall()
 
-    if len(week) > 0:
+    if len(selected_week) > 0:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM hours where week = '"+week[0]+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
     else:
@@ -236,7 +240,7 @@ def settings():
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
 
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, edit=edit, week=week)
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
 
 
     elif request.method == 'POST' :
@@ -256,6 +260,7 @@ def settings():
                     Kc = cursor.fetchall()[0][0]
                 #print(Kc)
                 i2cInstance.threshold[str(device)] = 100*Kc
+
         #change mode
         for device in i2cInstance.devices:
             mode="mode"+str(device)
@@ -265,7 +270,38 @@ def settings():
                     i2cInstance.mode[str(device)] = "Automatic"
                 elif i2cInstance.mode[str(device)] == "Automatic":
                     i2cInstance.mode[str(device)] = "Manual"
-
+        
+        #change selected week
+        if 'select_week' in request.form:
+            selected_week = request.form.get("select_week")
+            with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+                controlCursor = connection.cursor()
+                controlCursor.execute(UPDATE_CONTROLS,"week",selected_week[-1])
+                connection.commit()
+            
+        if 'save_week' in request.form:
+            week_name = request.form["week_name"]
+            with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                cursor = connection.cursor()
+                sql = "SELECT day, start, stop FROM ephemeralWeek"
+                cursor.execute(sql)
+                hours = cursor.fetchall()
+                for hour in hours:
+                    hour.insert(0,week_name)
+                    cursor.execute(INSERT_WEEK,hour[0],hour[1],hour[2],hour[3])
+                sql2 = "DELETE FROM ephemeralWeek"
+                cursor.execute(sql2)
+                connection.commit()
+                
+                
+        if 'new_week' in request.form:
+            selected_week=""
+            with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                cursor = connection.cursor()
+                sql = "DELETE FROM ephemeralWeek"
+                cursor.execute(sql)
+                connection.commit()
+                
         #change adress of device
         if 'ad_change' in request.form:
             print(request.form)
@@ -283,8 +319,9 @@ def settings():
             devices=i2cInstance.devices
             if len(devicesBef) < len(devices):
                 message = "New plant detected"
-                
+        
         #if hour parameters modified and validated
+
 #        for hour in hours:
 #            if "ok"+hour[0] in request.form:
 #                print(hours)
@@ -358,18 +395,18 @@ def settings():
         hours = cursor.fetchall()
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
     
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours,edit=edit, week=week)
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
 
 @app.route("/day/<day>", methods = ['POST','GET'])
 def daily_timeslot(day=None):
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
-        week = controlCursor.fetchall()
-    if len(week) > 0:
+        selected_week = controlCursor.fetchall()
+    if len(selected_week) > 0:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM hours where week = '"+week[0]+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
     else:
@@ -438,7 +475,7 @@ def command(cmd=None):
                     i2cInstance.flow[str(i2cInstance.watering[0])] += motor.flow()
                     i2cInstance.Off(i2cInstance.watering[0])
                     i2cInstance.On(int(command[5]))
-                controlCursor.execute(UPDATE_CONTROLS,["watering",1])
+                controlCursor.execute(UPDATE_CONTROLS,"fastreading",1)
                 connection.commit()
 
                 i2cInstance.flow[str(command[5])] += motor.turn(1000,1,1)
@@ -449,7 +486,7 @@ def command(cmd=None):
                 i2cInstance.Off(int(command[5]))
                 #if len(i2cInstance.watering) == 1:
                 #    del i2cInstance.watering[0]
-                controlCursor.execute(UPDATE_CONTROLS,["watering",0])
+                controlCursor.execute(UPDATE_CONTROLS,"fastreading",0)
                 connection.commit()
 
                 return 'Stop watering '+command[5]
@@ -612,7 +649,7 @@ if __name__ == '__main__':
             i2cInstance.Off(i2cInstance.watering[0])
         with sqlite3.connect(CONTROLS_LOGIN) as connection:
             cursor = connection.cursor()
-            cursor.execute(UPDATE_CONTROLS,["watering",0])
+            cursor.execute(UPDATE_CONTROLS,["fastreading",0])
             connection.commit()
 
 

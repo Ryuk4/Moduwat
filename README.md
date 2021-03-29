@@ -61,13 +61,14 @@ log file needs to be implemented
 timeslots for the week need to be implemented:
     -change table structure OK
     -change database structure of timeslots OK
-    -change handling of time : show week recap with weeks list and savetheweek button and days as buttons
-    - show days with start stop to be edited as is now
-    - open daily_timeslot with day argument
-    -add detection of day of the week
+    -change handling of time : show week recap with weeks list and savetheweek button and days as buttons OK
+    - show days with start stop to be edited as is now OK
+    - open daily_timeslot with day argument OK
+    -add detection of day of the week in automatic behaviour
     
 different weekly timeslots need to be implemented (vacation, workweek etc...):
-    -add list to be chosen from with new database structure (TBD)
+    -add list to be chosen from with new database structure (TBD) OK
+    
 water level in the tank needs to be recorded with alarm in case of low level
 total flow or individual flow for each plant is faulty. Needs to be corrected
 flows for each plant need to be recorded:
