@@ -437,11 +437,11 @@ def daily_timeslot(day=None):
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
         selected_week = controlCursor.fetchall()
-    print selected_week
+    print(selected_week)
     if selected_week :
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"' AND day= '"+day+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0][0]+"' AND day= '"+day+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
     else:
