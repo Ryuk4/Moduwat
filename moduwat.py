@@ -277,7 +277,8 @@ def settings():
         #change selected week
         if 'select_week' in request.form:
             print request.form
-            selected_week = request.form.get("week_select")
+            selected_week = str(request.form.get("week_select"))
+            print(selected_week)
             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                 controlCursor = connection.cursor()
                 controlCursor.execute(UPDATE_CONTROLS,"week",selected_week[-1])
