@@ -317,7 +317,7 @@ def settings():
                 
         if 'new_week' in request.form:
             selected_week=[]
-            print('new week')
+            #print('new week')
             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                 cursor = connection.cursor()
                 sql = "DELETE FROM ephemeralWeek"
@@ -325,10 +325,20 @@ def settings():
                 sql2 = "DELETE FROM controls WHERE variable = 'week'"
                 cursor.execute(sql2)
                 connection.commit()
+        
+        if 'delete_week' in request.form:
+            if selected_week:
+                with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                    cursor = connection.cursor()
+                    sql = "DELETE FROM hours where week = '"+selected_week[0][0]+"'"
+                    cursor.execute(sql)
+                    connection.commit()
+                selected_week=[]
                 
+        
         #change adress of device
         if 'ad_change' in request.form:
-            print(request.form)
+            #print(request.form)
             f_adress = int(request.form["faddress"])
             n_adress = int(request.form["naddress"])
             i2cInstance.change_adress(f_adress,n_adress)
@@ -413,8 +423,8 @@ def settings():
             preselected_id.append(None)
     
     if selected_week :
-        print("if selected_week exists in POST method")
-        print(selected_week)
+        #print("if selected_week exists in POST method")
+        #print(selected_week)
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
             sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0][0]+"'"
@@ -439,7 +449,7 @@ def daily_timeslot(day=None):
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
         selected_week = controlCursor.fetchall()
-    print(selected_week)
+    #print(selected_week)
     if selected_week :
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
@@ -462,15 +472,15 @@ def daily_timeslot(day=None):
     elif request.method == 'POST' :
         for day in ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"]:
             if "save"+day in request.form:
-                print(day)
-                print(request.form)
+                #print(day)
+                #print(request.form)
                 if str(request.form["start"]) != "":
-                    print(str(request.form["start"]))
+                    #print(str(request.form["start"]))
                     start = str(request.form["start"])
                 if str(request.form["stop"]) != "":
-                    print(str(request.form["stop"]))
+                    #print(str(request.form["stop"]))
                     stop = str(request.form["stop"])
-                print selected_week
+                #print(selected_week)
                 if selected_week:
                     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                         cursor = connection.cursor()
