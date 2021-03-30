@@ -323,6 +323,7 @@ def settings():
                 sql = "DELETE FROM ephemeralWeek"
                 cursor.execute(sql)
                 sql2 = "DELETE FROM controls WHERE variable = 'week'"
+                cursor.execute(sql2)
                 connection.commit()
                 
         #change adress of device
