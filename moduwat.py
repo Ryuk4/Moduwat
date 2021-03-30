@@ -245,6 +245,7 @@ def settings():
                 mode.append(1)
         print selected_week
         if selected_week :
+            print(weeks)
             selected_week_index = [weeks.index(str(selected_week[0][0]))]
         else:
             selected_week_index = [None]
