@@ -202,6 +202,7 @@ def settings():
         sql = "SELECT DISTINCT week FROM hours"
         controlCursor.execute(sql)
         weeks = controlCursor.fetchall()
+
     print selected_week
     if selected_week :
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
@@ -209,7 +210,7 @@ def settings():
             sql = "SELECT day, start, stop FROM hours where week = '"+str(selected_week[0][0])+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-
+        
 
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
@@ -244,10 +245,10 @@ def settings():
                 mode.append(1)
         print selected_week
         if selected_week :
-            selected_week = [selected_week]
+            selected_week_index = [weeks.index(selected_week[0][0])]
         else:
-            selected_week = [None]
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
+            selected_week_index = [None]
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week_index, weeks=weeks)
 
 
     elif request.method == 'POST' :
@@ -406,7 +407,7 @@ def settings():
             sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0][0]+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-        selected_week = [selected_week]
+        selected_week_index = [weeks.index(selected_week[0][0])]
 
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
@@ -414,10 +415,10 @@ def settings():
             sql = "SELECT day, start, stop FROM ephemeralWeek"
             cursor.execute(sql)
             hours = cursor.fetchall()
-            selected_week = [None]
+            selected_week_index = [None]
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
     
-    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
+    return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week_index, weeks=weeks)
 
 @app.route("/<day>/day", methods = ['POST','GET'])
 def daily_timeslot(day=None):
