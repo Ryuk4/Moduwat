@@ -105,7 +105,7 @@ Timeslots
 var weeks = {{ weeks | tojson }};
 var preselected_week = {{ selected_week | tojson }} ;
 form_week = document.getElementById('week');
-if(preselected_week[0][0] ==  null){
+if(preselected_week[0] ==  null){
 		form_week.innerHTML = `
 			<select id= "week_select" name= "week_select" onchange="document.getElementById('week').submit();" selected=-1>
                       		<option value='Select'>
