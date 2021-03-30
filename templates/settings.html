@@ -130,6 +130,9 @@ if(preselected_week[0] ==  null){
 			</select>
 		`;
 	}
+if(preselected_week[0] !=  null){
+		document.getElementById(id_select).selectedIndex = preselected[i]
+	}
 //hours table handled here
 var hours_list = {{ hours | tojson }};
 

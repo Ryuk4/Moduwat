@@ -297,7 +297,7 @@ def settings():
                 controlCursor = connection.cursor()
                 controlCursor.execute(UPDATE_CONTROLS,("week",selected_week))
                 connection.commit()
-                selected_week = (selected_week)
+            selected_week = (selected_week)
             
         if 'save_week' in request.form:
             week_name = request.form["week_name"]
@@ -317,7 +317,7 @@ def settings():
                 
         if 'new_week' in request.form:
             selected_week=[]
-            print 'new week'
+            print('new week')
             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                 cursor = connection.cursor()
                 sql = "DELETE FROM ephemeralWeek"
@@ -415,7 +415,7 @@ def settings():
         print(selected_week)
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0][0]+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
         selected_week_index = [weeks.index(selected_week)]
