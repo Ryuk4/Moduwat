@@ -406,10 +406,10 @@ def settings():
         print selected_week
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0][0]+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-        selected_week_index = [weeks.index(selected_week[0])]
+        selected_week_index = [weeks.index(selected_week)]
 
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
