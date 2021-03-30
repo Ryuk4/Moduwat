@@ -275,7 +275,7 @@ def settings():
                     i2cInstance.mode[str(device)] = "Manual"
         
         #change selected week
-        if 'select_week' in request.form:
+        if 'week_select' in request.form:
             print request.form
             selected_week = request.form.get("week_select")
             print(selected_week)
