@@ -209,7 +209,7 @@ def settings():
             sql = "SELECT day, start, stop FROM hours where week = '"+str(selected_week[0][0])+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-        selected_week = [selected_week]
+
 
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
@@ -217,7 +217,6 @@ def settings():
             sql = "SELECT day, start, stop FROM ephemeralWeek"
             cursor.execute(sql)
             hours = cursor.fetchall()
-            selected_week = [None]
 
     plant_list = [str(sorted(plants)[x][0]) for x in range(len(plants))]
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
@@ -244,6 +243,10 @@ def settings():
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
         print selected_week
+        if selected_week :
+            selected_week = [selected_week]
+        else:
+            selected_week = [None]
         return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
 
 
