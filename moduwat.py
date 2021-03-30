@@ -287,6 +287,7 @@ def settings():
                 controlCursor = connection.cursor()
                 controlCursor.execute(UPDATE_CONTROLS,("week",selected_week))
                 connection.commit()
+                selected_week = (selected_week)
             if not selected_week:
                 selected_week = []
             
