@@ -189,29 +189,33 @@ def settings():
     message=''
     edit=0
     selected_week=[]
+    #retrieve plant list from database
     with sqlite3.connect(PLANTS_LOGIN, timeout=10) as connection:
         cursor = connection.cursor()
         sql = "SELECT plant FROM plants"
         cursor.execute(sql)
         plants = cursor.fetchall()
 
+    #retrieve the selected week in controls table and the different weeks saved in hours table
     with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
         controlCursor = connection.cursor()
         controlCursor.execute("SELECT data from controls where variable = 'week'")
         selected_week = controlCursor.fetchall()
+        print("selected week before get")
+        print(selected_week)
         sql = "SELECT DISTINCT week FROM hours"
         controlCursor.execute(sql)
         weeks = controlCursor.fetchall()
-
-    print selected_week
+    
+    #is there a selected_week?
+    #if yes : retrieve the authorized hours from hours table
     if selected_week :
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
             sql = "SELECT day, start, stop FROM hours where week = '"+str(selected_week[0][0])+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-        
-
+    #if not : retrieve the authorized hours from ephemeral week table   
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
@@ -221,7 +225,7 @@ def settings():
 
     plant_list = [str(sorted(plants)[x][0]) for x in range(len(plants))]
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
-    #print(plant_list)
+
     if request.method == 'GET':
         flows = []
         if len(i2cInstance.watering) == 1:
@@ -243,16 +247,20 @@ def settings():
                 mode.append(0)
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
-        print selected_week
+
         if selected_week :
+            print("week list in get method when selected_week not empty")
             print(weeks)
             selected_week_index = [weeks.index(selected_week[0])]
+            print("index of selected week in weeks list")
+            print(selected_week_index)
         else:
             selected_week_index = [None]
         return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week_index, weeks=weeks)
 
 
     elif request.method == 'POST' :
+        print("request form in the POST method")
         print(request.form)
         #change plant type
         for device in i2cInstance.devices:
@@ -283,13 +291,13 @@ def settings():
         #change selected week
         if 'week_select' in request.form:
             selected_week = request.form.get("week_select")
+            print("selected_week from request form")
+            print(selected_week)
             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                 controlCursor = connection.cursor()
                 controlCursor.execute(UPDATE_CONTROLS,("week",selected_week))
                 connection.commit()
                 selected_week = (selected_week)
-            if not selected_week:
-                selected_week = []
             
         if 'save_week' in request.form:
             week_name = request.form["week_name"]
@@ -403,7 +411,8 @@ def settings():
             preselected_id.append(None)
     
     if selected_week :
-        print selected_week
+        print("if selected_week exists in POST method")
+        print(selected_week)
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
             sql = "SELECT day, start, stop FROM hours where week = '"+selected_week+"'"
