@@ -111,7 +111,7 @@ if(preselected_week[0] ==  null){
                       		<option value='Select'>
 					Select
 				</option>
-				{% for week in weekss %} 
+				{% for week in weekss[0] %} 
 					<option value='{{ week }}'>
 						{{ week }} 
 					</option> 
@@ -122,7 +122,7 @@ if(preselected_week[0] ==  null){
 	else{
 		form_week.innerHTML = `
 			<select id= "week_select" name= "week_select" onchange="document.getElementById('week').submit();" selected=` + preselected_week[0][0] + `>
-				{% for week in weeks %}
+				{% for week in weeks[0] %}
 					<option value='{{ week }}'>
 						{{ week }}
 					</option>
