@@ -297,7 +297,7 @@ def settings():
                 controlCursor = connection.cursor()
                 controlCursor.execute(UPDATE_CONTROLS,("week",selected_week))
                 connection.commit()
-            selected_week = (selected_week)
+            selected_week = [selected_week]
             
         if 'save_week' in request.form:
             week_name = request.form["week_name"]
