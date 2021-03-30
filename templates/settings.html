@@ -121,7 +121,7 @@ if(preselected_week[0] ==  null){
 	}
 	else{
 		form_week.innerHTML = `
-			<select id= "week_select" name= "week_select" onchange="document.getElementById('select_week').submit();" selected=` + preselected_week + `>
+			<select id= "week_select" name= "week_select" onchange="document.getElementById('select_week').submit();" selected=` + preselected_week[0] + `>
 				{% for week in weeks %}
 					<option value='{{ week[0] }}'>
 						{{ week[0] }}
