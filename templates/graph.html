@@ -140,7 +140,7 @@
                         },
 	                }],
 				data : {
-					rowsURL : '/'.concat(devices[i],'/data.json'),
+					rowsURL : {{ url_for(devices[i]+'/data.json') }},
 					enablePolling:  true,
             				dataRefreshRate: 2,
 					firstRowAsNames: false,
