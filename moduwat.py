@@ -245,7 +245,7 @@ def settings():
                 mode.append(1)
         print selected_week
         if selected_week :
-            selected_week_index = [weeks.index(selected_week[0][0])]
+            selected_week_index = [weeks.index(str(selected_week[0][0]))]
         else:
             selected_week_index = [None]
         return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week_index, weeks=weeks)
@@ -407,7 +407,7 @@ def settings():
             sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0][0]+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
-        selected_week_index = [weeks.index(selected_week[0][0])]
+        selected_week_index = [weeks.index(str(selected_week[0][0]))]
 
     else:
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
