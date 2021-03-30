@@ -140,7 +140,7 @@
                         },
 	                }],
 				data : {
-					rowsURL : 'http://192.168.1.63:9090/'.concat(devices[i],'/data.json'),
+					rowsURL : window.location.origin+'/' + devices[i] + '/data.json',
 					enablePolling:  true,
             				dataRefreshRate: 2,
 					firstRowAsNames: false,
@@ -160,6 +160,7 @@
 	        });
 		});
 	}
+//rowsURL : 'http://192.168.1.63:9090/'.concat(devices[i],'/data.json')
 </script>
 
 
