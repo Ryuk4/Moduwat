@@ -397,6 +397,7 @@ def settings():
             preselected_id.append(None)
     
     if selected_week :
+        print selected_week
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
             sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"'"
