@@ -242,7 +242,7 @@ def settings():
             if i2cInstance.mode[str(device)] == "Automatic":
                 mode.append(1)
         print selected_week
-        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=json.dumps([selected_week]), weeks=weeks)
+        return render_template("settings.html", devices=devices, mode=mode, threshold=threshold, flows=flows, date = date, plants = plant_list, preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
 
 
     elif request.method == 'POST' :
