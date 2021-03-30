@@ -206,7 +206,7 @@ def settings():
     if selected_week :
         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
             cursor = connection.cursor()
-            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"'"
+            sql = "SELECT day, start, stop FROM hours where week = '"+str(selected_week[0][0])+"'"
             cursor.execute(sql)
             hours = cursor.fetchall()
 
@@ -279,7 +279,7 @@ def settings():
             selected_week = request.form.get("week_select")
             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                 controlCursor = connection.cursor()
-                controlCursor.execute(UPDATE_CONTROLS,("week",selected_week[-1]))
+                controlCursor.execute(UPDATE_CONTROLS,("week",selected_week))
                 connection.commit()
             if not selected_week:
                 selected_week = []
