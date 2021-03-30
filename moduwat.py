@@ -276,15 +276,13 @@ def settings():
         
         #change selected week
         if 'week_select' in request.form:
-            print request.form
             selected_week = request.form.get("week_select")
-            print(selected_week)
             with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
                 controlCursor = connection.cursor()
-                controlCursor.execute(UPDATE_CONTROLS,"week",selected_week[-1])
+                controlCursor.execute(UPDATE_CONTROLS,("week",selected_week[-1]))
                 connection.commit()
             if not selected_week:
-                selected_week = [None]
+                selected_week = []
             
         if 'save_week' in request.form:
             week_name = request.form["week_name"]
@@ -303,7 +301,7 @@ def settings():
                 
                 
         if 'new_week' in request.form:
-            selected_week=[None]
+            selected_week=[]
             print 'new week'
             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                 cursor = connection.cursor()
@@ -397,11 +395,20 @@ def settings():
         else:
             preselected_id.append(None)
     
-    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-        cursor = connection.cursor()
-        sql = "SELECT day, start, stop FROM hours"
-        cursor.execute(sql)
-        hours = cursor.fetchall()
+    if selected_week :
+        with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT day, start, stop FROM hours where week = '"+selected_week[0]+"'"
+            cursor.execute(sql)
+            hours = cursor.fetchall()
+
+    else:
+        with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+            cursor = connection.cursor()
+            sql = "SELECT day, start, stop FROM ephemeralWeek"
+            cursor.execute(sql)
+            hours = cursor.fetchall()
+            selected_week = [None]
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
     
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week, weeks=weeks)
