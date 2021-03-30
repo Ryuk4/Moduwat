@@ -298,7 +298,7 @@ def settings():
                 
                 
         if 'new_week' in request.form:
-            selected_week=""
+            selected_week=[]
             print 'new week'
             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                 cursor = connection.cursor()
@@ -398,7 +398,7 @@ def settings():
         cursor.execute(sql)
         hours = cursor.fetchall()
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
-    selected_week=""
+    selected_week=[]
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=json.dumps([selected_week]), weeks=json.dumps(weeks))
 
 @app.route("/<day>/day", methods = ['POST','GET'])

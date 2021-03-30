@@ -48,13 +48,6 @@ Timeslots
  -->
 
 <form id="week">
-    <select id="select_week" name="select_week" onchange='document.getElementById("select_week").submit();' selected=` + preselected_week+ `>
-        {% for week in weeks %}
-            <option value='{{ week }}'>
-                {{ week }}
-            </option>
-        {% endfor %}
-    </select>
 </form>
 <form>
   <input type= "submit" name= "new_week" value= "New_week" />
@@ -108,9 +101,34 @@ Timeslots
 {% block javascript %}
 
 <script>
+// week hours settings are handled here
 var weeks = {{ weeks | tojson }};
-var preselected_week = {{ selected_week }}[0] ;
-
+var preselected_week = {{ selected_week }} ;
+if(preselected_week[0] ==  null){
+		form_plant.innerHTML = `
+			<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('week').submit();" selected=-1>
+                      		<option value='Select'>
+					Select
+				</option>
+				{% for week in weekss %} 
+					<option value='{{ week }}'>
+						{{ week }} 
+					</option> 
+				{% endfor %}
+			</select>
+		`;
+	}
+	else{
+		form_plant.innerHTML = `
+			<select id=` + id_select + ` name= ` + id_select + ` onchange="document.getElementById('` + id_plant + `').submit();" selected=` + preselected_week[0] + `>
+				{% for week in weeks %}
+					<option value='{{ week }}'>
+						{{ week }}
+					</option>
+				{% endfor %}
+			</select>
+		`;
+	}
 //hours table handled here
 var hours_list = {{ hours | tojson }};
 
