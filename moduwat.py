@@ -332,9 +332,10 @@ def settings():
                     cursor = connection.cursor()
                     sql = "DELETE FROM hours where week = '"+selected_week[0][0]+"'"
                     cursor.execute(sql)
+                    sql2 = "DELETE FROM controls where week= '"+selected_week[0][0]+"'"
                     connection.commit()
                 selected_week=[]
-                
+
         
         #change adress of device
         if 'ad_change' in request.form:

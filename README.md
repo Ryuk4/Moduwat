@@ -65,6 +65,9 @@ timeslots for the week need to be implemented:
     - show days with start stop to be edited as is now OK
     - open daily_timeslot with day argument OK
     -add detection of day of the week in automatic behaviour
+    -recharge week list after a saved week is deleted
+    -handle multiple line entries in daily timeslots when submitting the form
+
     
 different weekly timeslots need to be implemented (vacation, workweek etc...):
     -add list to be chosen from with new database structure (TBD) OK
