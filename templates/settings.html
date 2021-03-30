@@ -111,9 +111,9 @@ if(preselected_week[0] ==  null){
                       		<option value='Select'>
 					Select
 				</option>
-				{% for week in weeks[0] %} 
-					<option value='{{ week }}'>
-						{{ week }} 
+				{% for week in weeks %} 
+					<option value='{{ week[0] }}'>
+						{{ week[0] }} 
 					</option> 
 				{% endfor %}
 			</select>
@@ -121,10 +121,10 @@ if(preselected_week[0] ==  null){
 	}
 	else{
 		form_week.innerHTML = `
-			<select id= "week_select" name= "week_select" onchange="document.getElementById('week').submit();" selected=` + preselected_week[0][0] + `>
-				{% for week in weeks[0] %}
-					<option value='{{ week }}'>
-						{{ week }}
+			<select id= "week_select" name= "week_select" onchange="document.getElementById('week').submit();" selected=` + preselected_week[0] + `>
+				{% for week in weeks %}
+					<option value='{{ week[0] }}'>
+						{{ week[0] }}
 					</option>
 				{% endfor %}
 			</select>
@@ -193,7 +193,7 @@ for (let i = 0; i < devices.length; i++) {
 		column_31.appendChild(input31);
 	}
 	column_41 = document.createElement("td");
-	column_41.innerHTML = flows[i+1];
+	column_41.inne rHTML = flows[i+1];
 	column_51 = document.createElement("td");
 	entry_row[i].appendChild(column_11);
 	entry_row[i].appendChild(column_21);
