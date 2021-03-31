@@ -127,11 +127,29 @@ def automatic(i2cCall, piCall,  motorCall):
                     print("threshold "+str(device)+str(i2cCall.threshold[str(device)]))
                     if last_data[str(device)] < i2cCall.threshold[str(device)]:
                         print("dry "+str(device))
+                        now_day = datetime.datetime.now().strftime("%A")
+                        #retrieve the selected week in controls table and the different weeks saved in hours table
                         with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
-                            cursor = connection.cursor()
-                            sql = "SELECT Id, start, stop FROM hours"
-                            cursor.execute(sql)
-                            hours = cursor.fetchall()
+                            controlCursor = connection.cursor()
+                            controlCursor.execute("SELECT data from controls where variable = 'week'")
+                            selected_week = controlCursor.fetchall()
+                        
+                        #is there a selected_week?
+                        #if yes : retrieve the authorized hours from hours table
+                        if selected_week :
+                            with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                                cursor = connection.cursor()
+                                sql = "SELECT start, stop FROM hours where week = '"+str(selected_week[0][0])+"' AND day = '"+now_day+"'"
+                                cursor.execute(sql)
+                                hours = cursor.fetchall()
+                        #if not : retrieve the authorized hours from ephemeral week table   
+                        else:
+                            with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+                                cursor = connection.cursor()
+                                sql = "SELECT day, start, stop FROM ephemeralWeek where day = '"+now_day+"'"
+                                cursor.execute(sql)
+                                hours = cursor.fetchall()
+
                         hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
                         print("hours : ")
                         print(hours)
@@ -441,6 +459,13 @@ def settings():
             hours = cursor.fetchall()
             selected_week_index = [None]
     hours = [[str(param[j]) for j in range(len(hours[0]))] for param in hours]
+
+    #retrieve the selected week in controls table and the different weeks saved in hours table
+    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+        controlCursor = connection.cursor()
+        sql = "SELECT DISTINCT week FROM hours"
+        controlCursor.execute(sql)
+        weeks = controlCursor.fetchall()
     
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week_index, weeks=weeks)
 
@@ -538,6 +563,22 @@ def command(cmd=None):
                 return 'Stop watering '+command[5]
             else:
                 return 'Wrong command'
+    elif command[0:11] == 'FAST_READING':
+        with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
+            controlCursor = connection.cursor()
+            if command[12:15] == '_ON':
+                controlCursor.execute(UPDATE_CONTROLS,("fastreading",1))
+                connection.commit()
+                return 'Fast reading ON'
+            
+            elif command[6:10] == '_OFF':
+                controlCursor.execute(UPDATE_CONTROLS,("fastreading",0))
+                connection.commit()
+                return 'Fast reading OFF
+            
+            else:
+                return 'Wrong command'
+
     else:
         print(command)
         return 'Command not implemented yet'

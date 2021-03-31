@@ -48,7 +48,8 @@ watering activation needs to be recorded: OK
     -add watering activation in json data as /activation+sensor_id OK
     -add watering activation in graph data displayed OK
     
-correction to be made for speed reading when automatic watering (not activated RN)
+correction to be made for speed reading when automatic watering (not activated RN) OK
+create button for speed reading without watering
 
 activation threshold needs to be recorded: OK
     -change database structure of plants OK
@@ -64,8 +65,8 @@ timeslots for the week need to be implemented:
     -change handling of time : show week recap with weeks list and savetheweek button and days as buttons OK
     - show days with start stop to be edited as is now OK
     - open daily_timeslot with day argument OK
-    -add detection of day of the week in automatic behaviour
-    -recharge week list after a saved week is deleted
+    -add detection of day of the week in automatic behaviour OK
+    -recharge week list after a saved week is deleted OK
     -handle multiple line entries in daily timeslots when submitting the form
 
     

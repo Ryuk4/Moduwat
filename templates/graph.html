@@ -5,21 +5,10 @@
 
 {% block body %}			
 		<div id="maincontainer"></div>
-<!--
-			<div id="container" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
-		</div>
--->	 	
+	
 		<div id="controls">
-<!--			<button class="command command-water" value="water"> 
-				Water 
-			</button>
--->
+
 		</div>
-<!--
-		<div id="links">
-			<a href="settings">Settings</a>
-		</div>
--->
 {% endblock %}
 {% block javascript %}
 <script src="{{ url_for('static', filename='jquery-1.8.3.min.js') }}"></script>
@@ -160,7 +149,27 @@
 	        });
 		});
 	}
-//rowsURL : 'http://192.168.1.63:9090/'.concat(devices[i],'/data.json')
+	button_row[-1] = document.createElement("tr");
+    column_1 = document.createElement("td");
+    column_1.innerHTML = "Fast_reading";
+    column_2 = document.createElement("td");
+    var label = document.createElement("label");
+	label.className = "switch";
+	btn = document.createElement("input");
+	btn.type = "checkbox"
+	btn.className = "command command-fastreading";
+	btn.value = "fast_reading";
+	btn.id = "button_fast_reading";
+	if(fast_reading == 1 ){
+		btn.checked = true;
+	}
+	span = document.createElement("span");
+	span.className = "slider round";
+	label.appendChild(btn);
+	label.appendChild(span);
+	column_2.appendChild(label);
+	button_row[-1].appendChild(column_1);
+	button_row[-1].appendChild(column_2);
 </script>
 
 
@@ -171,7 +180,7 @@ addEventListener("DOMContentLoaded", function() {
 // (which all of the buttons we just created have) 
 	var commandButtons = document.querySelectorAll(".command");
 	//alert(commandButtons.length); 
-	for (var i=0, l=commandButtons.length; i<l; i++) { 
+	for (var i=0, l=commandButtons.length-1; i<l; i++) { 
 		var button = commandButtons[i];
 		//alert(commandButtons[i]);
 		// For each button, listen for the "click" event 
@@ -195,13 +204,15 @@ addEventListener("DOMContentLoaded", function() {
 			if(this.checked){
 				request.open("GET","/command/"+command+"_ON", true);
 				//alert("/"+command+"_ON");
-				for (var i=0, l=commandButtons.length; i<l; i++) {
+				for (var i=0, l=commandButtons.length-1; i<l; i++) {
 					commandButtons[i].checked = false;
 					this.checked = true;
+					commandButtons[-1].checked = true;
 				}
 			}
 			else{
 				request.open("GET","/command/"+command+"_OFF", true);
+				commandButtons[-1].checked = false;
 			}
 			// We point the request at the appropriate command 
 			//request.open("GET", "/" + command, true); 
@@ -209,7 +220,38 @@ addEventListener("DOMContentLoaded", function() {
 			request.send();
 			
 		}); 
-	} 
+	}
+	var button = commandButtons[-1];
+	// For the button, listen for the "click" event 
+	button.addEventListener("change", function(e) { 
+    	// When a click happens, stop the button 
+    	// from submitting our form (if we have one) 
+    	e.preventDefault(); 
+    	var changedButton = e.target; 
+    	var command = changedButton.value; 
+    	// Now we need to send the data to our server 
+    	// without reloading the page - this is the domain of 
+    	// AJAX (Asynchronous JavaScript And XML)
+    	// We will create a new request object 
+    	// and set up a handler for the response 
+		var request = new XMLHttpRequest(); 
+		request.onload = function() { 
+			// We could do more interesting things with the response 
+			// or, we could ignore it entirely 
+			alert(request.responseText); 
+		}; 
+		if(this.checked){
+			request.open("GET","/command/"+command+"_ON", true);
+			//alert("/"+command+"_ON");
+		}
+		else{
+			request.open("GET","/command/"+command+"_OFF", true);
+		}
+		// We point the request at the appropriate command 
+		//request.open("GET", "/" + command, true); 
+		// and then we send it off 
+		request.send();		
+	});  
 }, true); 
 </script>
 
