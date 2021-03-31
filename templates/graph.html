@@ -31,6 +31,7 @@
 	var dry_list = {{ dry }} ;
 	var header = [];
 	var plants = JSON.parse('{{ plants | tojson | safe }}');
+	var fast_reading = {{ fast_reading }};
 	for (let i = 0; i < devices.length; i++) {
         containers[i] = document.createElement("div");
 		header[i] = document.createElement("div");
@@ -48,7 +49,7 @@
 		//column_1.className = "column";
 		column_1.innerHTML = "Watering ".concat(devices[i]);
 		column_2 = document.createElement("td");
-        //column_2.className = "column";
+		//column_2.className = "column";
 		var label = document.createElement("label");
 		label.className = "switch";
 		btn = document.createElement("input");
@@ -149,11 +150,12 @@
 	        });
 		});
 	}
-	button_row[-1] = document.createElement("tr");
-    column_1 = document.createElement("td");
-    column_1.innerHTML = "Fast_reading";
-    column_2 = document.createElement("td");
-    var label = document.createElement("label");
+	group = document.createElement("table");
+	button_row[button_row.length -1] = document.createElement("tr");
+	column_1 = document.createElement("td");
+	column_1.innerHTML = "Fast_reading";
+	column_2 = document.createElement("td");
+	var label = document.createElement("label");
 	label.className = "switch";
 	btn = document.createElement("input");
 	btn.type = "checkbox"
@@ -168,8 +170,10 @@
 	label.appendChild(btn);
 	label.appendChild(span);
 	column_2.appendChild(label);
-	button_row[-1].appendChild(column_1);
-	button_row[-1].appendChild(column_2);
+	button_row[button_row.length -1].appendChild(column_1);
+	button_row[button_row.length -1].appendChild(column_2);
+	group.appendChild(button_row[button_row.length -1]);
+	document.getElementById("controls").appendChild(group);
 </script>
 
 
@@ -207,12 +211,12 @@ addEventListener("DOMContentLoaded", function() {
 				for (var i=0, l=commandButtons.length-1; i<l; i++) {
 					commandButtons[i].checked = false;
 					this.checked = true;
-					commandButtons[-1].checked = true;
+					commandButtons[commandButtons.length -1].checked = true;
 				}
 			}
 			else{
 				request.open("GET","/command/"+command+"_OFF", true);
-				commandButtons[-1].checked = false;
+				commandButtons[commandButtons.length -1].checked = false;
 			}
 			// We point the request at the appropriate command 
 			//request.open("GET", "/" + command, true); 
@@ -221,7 +225,7 @@ addEventListener("DOMContentLoaded", function() {
 			
 		}); 
 	}
-	var button = commandButtons[-1];
+	var button = commandButtons[commandButtons.length -1];
 	// For the button, listen for the "click" event 
 	button.addEventListener("change", function(e) { 
     	// When a click happens, stop the button 

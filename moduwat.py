@@ -86,7 +86,7 @@ def poll_data(i2cCall, piCall):
                 if read is not None:
                     if len(i2cCall.watering) == 1:
                         if i2cCall.watering[0]==device:
-                            val = (nowread,read,i2cCall.watering[0],i2cCall.threshold[str(device)])
+                            val = (nowread,read,1,i2cCall.threshold[str(device)])
                     else:
                         val = (nowread,read,0,i2cCall.threshold[str(device)])
                     with sqlite3.connect(MEASUREMENTS_LOGIN, timeout=10) as connection:
@@ -133,7 +133,7 @@ def automatic(i2cCall, piCall,  motorCall):
                             controlCursor = connection.cursor()
                             controlCursor.execute("SELECT data from controls where variable = 'week'")
                             selected_week = controlCursor.fetchall()
-                        
+
                         #is there a selected_week?
                         #if yes : retrieve the authorized hours from hours table
                         if selected_week :
@@ -142,7 +142,7 @@ def automatic(i2cCall, piCall,  motorCall):
                                 sql = "SELECT start, stop FROM hours where week = '"+str(selected_week[0][0])+"' AND day = '"+now_day+"'"
                                 cursor.execute(sql)
                                 hours = cursor.fetchall()
-                        #if not : retrieve the authorized hours from ephemeral week table   
+                        #if not : retrieve the authorized hours from ephemeral week table
                         else:
                             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                                 cursor = connection.cursor()
@@ -187,7 +187,7 @@ def automatic(i2cCall, piCall,  motorCall):
 def data(device):
     with sqlite3.connect(MEASUREMENTS_LOGIN,timeout=10) as connection:
         showCursor = connection.cursor()
-        showCursor.execute("SELECT 1000*time, measure, 99*watering, threshold  from hygrometry"+str(device))
+        showCursor.execute("SELECT 1000*time, measure, 100*watering, threshold  from hygrometry"+str(device))
         results = showCursor.fetchall()
     return json.dumps(results)
 
@@ -196,10 +196,15 @@ def data(device):
 def graph():
     threshold=[]
     plants=[]
+    with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
+        controlCursor = connection.cursor()
+        controlCursor.execute("SELECT variable,data from controls where variable = 'fastreading'")
+        fast_reading = controlCursor.fetchall()[0][1]
+
     for device in i2cInstance.devices:
         threshold.append(i2cInstance.threshold[str(device)])
         plants.append(i2cInstance.plant_type[str(device)])
-    return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering, threshold = threshold, dry = i2cInstance.dry_list,plants = plants)
+    return render_template("graph.html", devices = i2cInstance.devices,watering = i2cInstance.watering, threshold = threshold, dry = i2cInstance.dry_list,plants = plants, fast_reading=fast_reading)
 
 
 @app.route("/settings", methods = ['POST','GET'])
@@ -224,7 +229,7 @@ def settings():
         sql = "SELECT DISTINCT week FROM hours"
         controlCursor.execute(sql)
         weeks = controlCursor.fetchall()
-    
+
     #is there a selected_week?
     #if yes : retrieve the authorized hours from hours table
     if selected_week :
@@ -305,7 +310,7 @@ def settings():
                     i2cInstance.mode[str(device)] = "Automatic"
                 elif i2cInstance.mode[str(device)] == "Automatic":
                     i2cInstance.mode[str(device)] = "Manual"
-        
+
         #change selected week
         if 'week_select' in request.form:
             selected_week = request.form.get("week_select")
@@ -316,7 +321,7 @@ def settings():
                 controlCursor.execute(UPDATE_CONTROLS,("week",selected_week))
                 connection.commit()
             selected_week = [(selected_week,)]
-            
+
         if 'save_week' in request.form:
             week_name = request.form["week_name"]
             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
@@ -331,8 +336,7 @@ def settings():
                 sql2 = "DELETE FROM ephemeralWeek"
                 cursor.execute(sql2)
                 connection.commit()
-                
-                
+
         if 'new_week' in request.form:
             selected_week=[]
             #print('new week')
@@ -343,7 +347,7 @@ def settings():
                 sql2 = "DELETE FROM controls WHERE variable = 'week'"
                 cursor.execute(sql2)
                 connection.commit()
-        
+
         if 'delete_week' in request.form:
             if selected_week:
                 with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
@@ -354,7 +358,7 @@ def settings():
                     connection.commit()
                 selected_week=[]
 
-        
+
         #change adress of device
         if 'ad_change' in request.form:
             #print(request.form)
@@ -372,7 +376,7 @@ def settings():
             devices=i2cInstance.devices
             if len(devicesBef) < len(devices):
                 message = "New plant detected"
-        
+
         #if hour parameters modified and validated
 
 #        for hour in hours:
@@ -389,11 +393,11 @@ def settings():
 #                    sql = "REPLACE INTO hours (Id,start,stop) VALUES(?,?,?)"
 #                    cursor.execute(sql,hours[int(hour[0])-1])
 #                    connection.commit()
-        
+
         #if hour parameters changes are canceled
 #        if "cancel" in request.form:
 #            pass
-        
+
         #if new line of hour parameters
 #        if "addline" in request.form:
 #            param = []
@@ -440,7 +444,7 @@ def settings():
             preselected_id.append(plant_list.index(i2cInstance.plant_type[str(device)]))
         else:
             preselected_id.append(None)
-    
+
     if selected_week :
         #print("if selected_week exists in POST method")
         #print(selected_week)
@@ -466,7 +470,7 @@ def settings():
         sql = "SELECT DISTINCT week FROM hours"
         controlCursor.execute(sql)
         weeks = controlCursor.fetchall()
-    
+
     return render_template("settings.html", message=message, devices=devices, mode=mode, threshold=threshold, flows=flows, date=date, plants = plant_list,preselected_plant=json.dumps(preselected_id), hours=hours, selected_week=selected_week_index, weeks=weeks)
 
 @app.route("/<day>/day", methods = ['POST','GET'])
@@ -563,19 +567,20 @@ def command(cmd=None):
                 return 'Stop watering '+command[5]
             else:
                 return 'Wrong command'
-    elif command[0:11] == 'FAST_READING':
+    elif command[0:12] == 'FAST_READING':
+        print(command[12:15])
         with sqlite3.connect(CONTROLS_LOGIN,timeout=10) as connection:
             controlCursor = connection.cursor()
             if command[12:15] == '_ON':
                 controlCursor.execute(UPDATE_CONTROLS,("fastreading",1))
                 connection.commit()
                 return 'Fast reading ON'
-            
-            elif command[6:10] == '_OFF':
+
+            elif command[12:16] == '_OFF':
                 controlCursor.execute(UPDATE_CONTROLS,("fastreading",0))
                 connection.commit()
-                return 'Fast reading OFF
-            
+                return 'Fast reading OFF'
+
             else:
                 return 'Wrong command'
 
@@ -604,7 +609,7 @@ def show_database():
             plants = cursor.fetchall()
         plants = [[str(param[j]) for j in range(len(plants[0]))] for param in plants]
         print(request.form)
-        
+
         #if plant parameters modified and validated
         for plant in plants:
             if "ok"+plant[0] in request.form:
@@ -629,7 +634,7 @@ def show_database():
         #if plant parameters changes are canceled
         if "cancel" in request.form:
             pass
-        
+
         #if new line of plant parameters
         if "addline" in request.form:
             param = []
@@ -713,7 +718,7 @@ if __name__ == '__main__':
                     controlsCursor.execute(sql_hours_drop)
                     controlsCursor.execute(HOURS_TABLE)
                     connection.commit()
-                    
+
                     sql_ephemeral_week_drop = "DROP TABLE IF EXISTS ephemeralWeek"
                     controlsCursor.execute(sql_ephemeral_week_drop)
                     controlsCursor.execute(EPHEMERAL_WEEK_TABLE)
@@ -726,7 +731,7 @@ if __name__ == '__main__':
         thr2 = Thread(target = automatic, args=(i2cInstance,pi,motor))
         thr2.daemon = True
         thr2.start()
-        http_server.serve_forever() 
+        http_server.serve_forever()
         #app.run(**FLASK_CONFIG)
 
     except(KeyboardInterrupt):
