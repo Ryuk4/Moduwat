@@ -89,6 +89,8 @@ def poll_data(i2cCall, piCall):
                             val = (nowread,read,1,i2cCall.threshold[str(device)])
                         else:
                             val = (nowread,read,0,i2cCall.threshold[str(device)])
+                    else:
+                        val = (nowread,read,0,i2cCall.threshold[str(device)])
                     with sqlite3.connect(MEASUREMENTS_LOGIN, timeout=10) as connection:
                         measureCursor = connection.cursor()
                         measureCursor.execute(sql,val)
