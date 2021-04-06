@@ -79,7 +79,7 @@ flows for each plant need to be recorded:
     -change database structure of plants OK
     -add recording in TBD thread
     
-
+editable time between automated checkup
 
 
 

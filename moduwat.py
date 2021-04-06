@@ -135,13 +135,14 @@ def automatic(i2cCall, piCall,  motorCall):
                             controlCursor = connection.cursor()
                             controlCursor.execute("SELECT data from controls where variable = 'week'")
                             selected_week = controlCursor.fetchall()
-
+                        print("selected week")
+                        print(selected_week)
                         #is there a selected_week?
                         #if yes : retrieve the authorized hours from hours table
                         if selected_week :
                             with sqlite3.connect(CONTROLS_LOGIN, timeout=10) as connection:
                                 cursor = connection.cursor()
-                                sql = "SELECT start, stop FROM hours where week = '"+str(selected_week[0][0])+"' AND day = '"+now_day+"'"
+                                sql = "SELECT day, start, stop FROM hours where week = '"+str(selected_week[0][0])+"' AND day = '"+now_day+"'"
                                 cursor.execute(sql)
                                 hours = cursor.fetchall()
                         #if not : retrieve the authorized hours from ephemeral week table
