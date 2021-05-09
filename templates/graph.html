@@ -47,7 +47,12 @@
 		//button_row[i].className = "row";
 		column_1 = document.createElement("td");
 		//column_1.className = "column";
-		column_1.innerHTML = "Watering ".concat(devices[i]);
+		if(plants[i] == 'Select'){
+			column_1.innerHTML = "Watering ".concat(devices[i]);
+		}
+		else{
+			column_1.innerHTML = "Watering ".concat(plants[i]);
+		}
 		column_2 = document.createElement("td");
 		//column_2.className = "column";
 		var label = document.createElement("label");

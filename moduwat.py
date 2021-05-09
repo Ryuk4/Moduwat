@@ -15,6 +15,9 @@ from flask_cors import cross_origin
 import pytz
 from gevent.pywsgi import WSGIServer
 import os
+from loguru import logger
+
+logger.add("log_file.log", rotation="10 MB")
 
 pi=pigpio.pi()
 i2cInstance = I2c(pi)
@@ -683,7 +686,8 @@ def restart():
         os.system('sudo reboot now')
 
 
-if __name__ == '__main__':
+@logger.catch
+def main():
     try:
         i2cInstance.scan()
         for device in i2cInstance.devices:
@@ -748,3 +752,5 @@ if __name__ == '__main__':
             connection.commit()
 
 
+if __name__ == '__main__':
+	main()

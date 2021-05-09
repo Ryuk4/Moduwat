@@ -6,7 +6,7 @@ import pigpio
 
 
 class Motor(object):
-        def __init__(self,pi):
+	def __init__(self,pi):
 		self.speed = 0
 		self.direction = 1
 		self.flowr = 0
@@ -17,7 +17,7 @@ class Motor(object):
 		self.STEP = 27 #step pin (the one that makes the motor turn
 		self.enable = 22 #enable is 1 to stop the drv8825 and 0 to enable it
 		self.SPR = 48 #48 steps per turn of the motor
-                self.pi=pi
+		self.pi=pi
 		self.pi.set_mode(self.DIR, pigpio.OUTPUT)
 		self.pi.set_mode(self.STEP,pigpio.OUTPUT)
 		self.pi.set_mode(self.enable, pigpio.OUTPUT)
@@ -27,7 +27,7 @@ class Motor(object):
 		self.previous_spd = 0
 		self.previous_dir = 0
 
-        def turn(self,speed,direction,ramp_time):
+	def turn(self,speed,direction,ramp_time):
 		"""things that still need to be coded :
 		- how to ramp if new speed is in opposite direction (idea to use time.sleep for the time the motor ramps down then change pin direction and then send wave chain with new ramping up)
 		"""
@@ -121,18 +121,18 @@ class Motor(object):
 	def water(self, speed, ramp_time, flow):
 		"""speed in RPM and flow in mL"""
 		#self.pi.write(self.enable, 0)
-                print("total flow: "+str(flow))
+		print("total flow: "+str(flow))
 		ramp_flow = speed*self.flowrate*ramp_time/(2*60)  #calculates flow in mL for speed increase and decrease
-                print("ramp flow: "+str(ramp_flow))
+		print("ramp flow: "+str(ramp_flow))
 		top_spd_time = 60*(flow - 2*ramp_flow)/(speed*self.flowrate)
-                print(top_spd_time)
+		print(top_spd_time)
 
 		if top_spd_time > 0:
-                        self.turn(speed,1,ramp_time)
+			self.turn(speed,1,ramp_time)
 			time.sleep(top_spd_time)
-                        self.off(ramp_time)
-                        #time.sleep(top_spd_time+2*ramp_time)
-                if top_spd_time < 0:
-                        self.turn(speed*(ramp_time+top_spd_time/2)/ramp_time,1,ramp_time+top_spd_time/2)
-                        self.off(ramp_time+top_spd_time/2)
-                        #time.sleep(2*ramp_time)
+			self.off(ramp_time)
+			#time.sleep(top_spd_time+2*ramp_time)
+		if top_spd_time < 0:
+			self.turn(speed*(ramp_time+top_spd_time/2)/ramp_time,1,ramp_time+top_spd_time/2)
+			self.off(ramp_time+top_spd_time/2)
+			#time.sleep(2*ramp_time)
